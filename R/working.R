@@ -5,7 +5,12 @@ rm(list=ls());cat('\f')
 cars <- c("tesla model 3", "chevy bolt", "hyundai kona")
 
 locs <- c("Durham", "Charlottesville", "Carowinds", 
-          "Cincinnati", "Asheville")
+          "Cincinnati", "Asheville", "Chicago", 
+          "Miami")
+
+metrics <- c("total time", "charging time", 
+             "total miles", "depart battery pct", 
+             "arrive battery pct")
 
 # makeup list of O-D pairs----
 ods  <- expand.grid("Durham", locs, 
