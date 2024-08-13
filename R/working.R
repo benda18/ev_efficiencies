@@ -3,7 +3,8 @@ library(ggplot2)
 
 rm(list=ls());cat('\f')
 
-cars <- c("tesla model 3", "chevy bolt", "hyundai kona")
+cars <- c("tesla model 3", "chevy bolt", "hyundai kona", 
+          "volkswagen id.4")
 
 locs <- c("Durham", "Charlottesville", "Carowinds", 
           "Cincinnati", "Asheville", "Chicago", 
@@ -79,6 +80,14 @@ odscars[grepl("hyundai", odscars$car) &
 odscars[grepl("hyundai", odscars$car) & 
           odscars$Var2 == "Carowinds",]$t_miles <- 316
 
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$t_hrs <- 6+57/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$chrg_hrs <- 1+15/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$t_miles <- 328
+
+
 # charlottesville
 odscars[grepl("chevy", odscars$car) & 
           odscars$Var2 == "Charlottesville",]$t_hrs <- 8+46/60
@@ -101,6 +110,13 @@ odscars[grepl("hyundai", odscars$car) &
 odscars[grepl("hyundai", odscars$car) & 
           odscars$Var2 == "Charlottesville",]$t_miles <- 366
 
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$t_hrs <- 9+6/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$chrg_hrs <- 1+59/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$t_miles <- 379
+
 
 ggplot(data = odscars, 
        aes(x = t_hrs, y = chrg_hrs)) + 
@@ -112,3 +128,5 @@ ggplot(data = odscars,
            color = car)) + 
   geom_smooth(method = "lm", se = F) +
   geom_point()
+
+odscars
