@@ -12,7 +12,7 @@ cars <- c("tesla model 3", "chevy bolt", "hyundai kona",
           "volkswagen id.4")
 
 locs <- c("Durham", "Charlottesville", "Carowinds", 
-          "Cincinnati", "Asheville", "Chicago", 
+          "Hildredth Ave, Cincinnati", "Asheville", "Chicago", 
           "Miami")
 
 metrics <- c("total time", "charging time", 
@@ -165,5 +165,18 @@ ggplot(data = odscars,
 odscars %>%
   group_by(car) %>%
   summarise(mpCh = sum(t_miles, 
-                              na.rm = T) / 
+                       na.rm = T) / 
               sum(chrg_hrs, na.rm = T))
+
+# chevy carowinds scenarios----
+
+cc <- function(max_spd     = NA, 
+               max_chrgpct = NA, 
+               total_hrs   = NA, 
+               charge_hrs  = NA, 
+               total_usd   = NA){
+  
+}
+
+cc.params <- expand.grid(maxMPH = c(60,65,70), 
+                         maxCHRG = c(50,60,70,80,90))
