@@ -117,6 +117,34 @@ odscars[grepl("volkswagen", odscars$car) &
 odscars[grepl("volkswagen", odscars$car) & 
           odscars$Var2 == "Charlottesville",]$t_miles <- 379
 
+# asheville
+odscars[grepl("chevy", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_hrs <- 9+43/60
+odscars[grepl("chevy", odscars$car) & 
+          odscars$Var2 == "Asheville",]$chrg_hrs <- 2+37/60
+odscars[grepl("chevy", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_miles <- 454
+
+odscars[grepl("tesla", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_hrs <- 8+28/60
+odscars[grepl("tesla", odscars$car) & 
+          odscars$Var2 == "Asheville",]$chrg_hrs <- 1+8/60
+odscars[grepl("tesla", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_miles <- 453
+
+odscars[grepl("hyundai", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_hrs <- 9+8/60
+odscars[grepl("hyundai", odscars$car) & 
+          odscars$Var2 == "Asheville",]$chrg_hrs <- 1+43/60
+odscars[grepl("hyundai", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_miles <- 458
+
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_hrs <- 9+38/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Asheville",]$chrg_hrs <- 2+7/60
+odscars[grepl("volkswagen", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_miles <- 454
 
 ggplot(data = odscars, 
        aes(x = t_hrs, y = chrg_hrs)) + 
@@ -129,4 +157,8 @@ ggplot(data = odscars,
   geom_smooth(method = "lm", se = F) +
   geom_point()
 
-odscars
+odscars %>%
+  group_by(car) %>%
+  summarise(mpCh = sum(t_miles, 
+                              na.rm = T) / 
+              sum(chrg_hrs, na.rm = T))
