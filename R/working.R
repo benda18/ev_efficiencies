@@ -271,7 +271,7 @@ ggplot() +
   scale_x_continuous(name = "Speed (MPH)", 
                      breaks = seq(0,100,by=5))+
   scale_color_discrete(name = "Legend")+
-  theme(legend.position = "bottom", 
+  theme(legend.position = "right", 
         legend.direction = "vertical")+
   labs(title = "Chevy Bolt Speed VS Time", 
        subtitle = "Carowinds Trip")
@@ -322,7 +322,7 @@ ggplot(data = spd_time[spd_time$max.spd >= 60,],
   geom_point(aes(size = drive.hrs)) +
   # scale_x_log10()+
   # scale_y_log10()+
-  theme(legend.position = "bottom", 
+  theme(legend.position = "right", 
         legend.direction = "vertical")
 
 
