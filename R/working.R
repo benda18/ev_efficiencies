@@ -8,6 +8,9 @@ renv::snapshot()
 
 rm(list=ls());cat('\f')
 
+carowinds.ice.rthrs <- 4+46/60
+
+
 cars <- c("tesla model 3", "chevy bolt", "hyundai kona", 
           "volkswagen id.4")
 
@@ -193,19 +196,134 @@ cc <- function(max_spd    = NA,
 cc.params <- expand.grid(maxMPH = c(seq(45,75,by=10)), 
                          maxCHRG = c(50,60))
 
-as_tibble(rbind(cc(75,50, 
-                   7+9/60, 1+30/60, 30.2, 3.6, 322),
-                cc(70,50, 
-                   6+56/60, 1+30/60, 48.9, 3.56, 322),
-                cc(65,50, 
-                   6+57/60, 1+26/60, 36.5, 3.68, 322),
-                cc(60,50, 
-                   7+9/60, 1+19/60, 33.4, 3.88, 317),
-                cc(55,50, 
-                   7+30/60, 1+14/60, 28.7, 4.07, 316),
-                cc(50,50, 
-                   7+57/60, 1+9/60, 27.1, 4.26, 318),
-                cc(45,50, 
-                   8+37/60, 1+6/60, 44.2, 4.43, 316)))
+spd_time50 <- as_tibble(rbind(cc(75,50, 
+                               6+54/60, 1+33/60, 49.8, 3.46, 322),
+                            cc(70,50, 
+                               6+56/60, 1+30/60, 48.9, 3.56, 322),
+                            cc(65,50, 
+                               6+57/60, 1+26/60, 36.5, 3.68, 322),
+                            cc(60,50, 
+                               7+9/60, 1+19/60, 33.4, 3.88, 317),
+                            cc(55,50, 
+                               7+30/60, 1+14/60, 28.7, 4.07, 316),
+                            cc(50,50, 
+                               7+57/60, 1+9/60, 27.1, 4.26, 318),
+                            cc(45,50, 
+                               8+37/60, 1+6/60, 44.2, 4.43, 316)))
+
+spd_time60 <- as_tibble(rbind(cc(75,60, 
+                                 6+44/60, 1+35/60, 57.5, 3.42, 320),
+                              cc(70,60, 
+                                 6+47/60, 1+33/60, 59.3, 3.51, 319),
+                              cc(65,60, 
+                                 6+57/60, 1+28/60, 57.4, 3.67, 319),
+                              cc(60,60, 
+                                 7+18/60, 1+24/60, 30.6, 3.85, 326),
+                              cc(55,60, 
+                                 7+23/60, 1+15/60, 50.8, 4.06, 316),
+                              cc(50,60, 
+                                 8+2/60, 1+13/60, 51.7, 4.23, 323),
+                              cc(45,60, 
+                                 8+39/60, 1+10/60, 50.4, 4.39, 3.23)))
+
+spd_time80 <- as_tibble(rbind(cc(75,80, 
+                                 6+38/60, 1+45/60, 34.9, 3.43, 313),
+                              cc(70,80, 
+                                 6+42/60, 1+42/60, 34.3, 3.51, 313),
+                              cc(65,80, 
+                                 6+50/60, 1+36/60, 32.5, 3.67, 313),
+                              cc(60,80, 
+                                 7+3/60, 1+28/60, 33.6, 3.85, 314),
+                              cc(55,80, 
+                                 7+21/60, 1+21/60, 31.5, 4.06, 314),
+                              cc(50,80, 
+                                 7+48/60, 1+16/60, 29.7, 4.23, 313),
+                              cc(45,80, 
+                                 8+23/60, 1+11/60, 25.6, 4.39, 312)))
+
+spd_time <- rbind(spd_time50, spd_time60, spd_time80)
 
 
+ggplot() +
+  geom_area(data = spd_time[spd_time$max.spd >= 60,], 
+            aes(y = t.hrs, 
+                x = max.spd,
+                #fill = "Trip Time (hrs)", 
+                color = "Trip Time (hrs)"),
+            linewidth = 1.1, 
+            alpha = 0.2) + 
+  geom_point(data = spd_time[spd_time$max.spd >= 60,], 
+             aes(y = t.hrs, 
+                 x = max.spd,
+                 #fill = "Trip Time (hrs)", 
+                 color = "Trip Time (hrs)"),
+             size = 4) +
+  geom_line(data = spd_time[spd_time$max.spd >= 60,], linewidth = 1.1, 
+            aes(y = chrg.hrs, 
+                x = max.spd, 
+                color = "Charging Time (hrs)")) +
+  geom_point(data = spd_time[spd_time$max.spd >= 60,], size = 4,
+             aes(y = chrg.hrs, 
+                 x = max.spd, 
+                 color = "Charging Time (hrs)")) +
+  scale_y_continuous(breaks = seq(0,100,by=1), 
+                     name = "Time (hrs)") +
+  scale_x_continuous(name = "Speed (MPH)", 
+                     breaks = seq(0,100,by=5))+
+  scale_color_discrete(name = "Legend")+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical")+
+  labs(title = "Chevy Bolt Speed VS Time", 
+       subtitle = "Carowinds Trip")
+
+
+ggplot() + 
+  geom_path(data = spd_time[spd_time$max.spd >= 60,], size = 1.2,
+            aes(x = drive.hrs, y = t.usd, 
+                color = factor(max.soc), 
+                group = max.soc)) +
+  geom_point(data = spd_time[spd_time$max.spd >= 60,], 
+             aes(x = drive.hrs, y = t.usd, 
+                 color = factor(max.soc)), 
+             size = 10) +
+  geom_text(data = spd_time[spd_time$max.spd >= 60,], 
+            aes(x = drive.hrs, y = t.usd, 
+                label = max.spd)) +
+  scale_color_discrete()
+
+ggplot(data = spd_time[spd_time$max.spd >= 60,], 
+       aes(x = max.spd, y = drive.hrs, 
+           color = factor(max.soc))) + 
+  geom_line() +
+  geom_point(aes(size = chrg.hrs)) +
+  #scale_size_area() +
+  scale_y_continuous(breaks = seq(0,100,by=0.5), 
+                     name = "Time (hrs)") +
+  scale_x_continuous(name = "Speed (MPH)", 
+                     breaks = seq(0,100,by=5))
+
+ggplot(data = spd_time[spd_time$max.spd >= 60,], 
+       aes(x = max.spd, y = chrg.hrs/drive.hrs, 
+           color = factor(max.soc))) + 
+  geom_line() +
+  geom_point(aes(size = drive.hrs)) +
+  #scale_size_area() +
+  scale_y_continuous(#breaks = seq(0,100,by=0.5), 
+                     name = "Charge Time:Drive Time") +
+  scale_x_continuous(name = "Speed (MPH)", 
+                     breaks = seq(0,100,by=5))
+
+
+ggplot(data = spd_time[spd_time$max.spd >= 60,], 
+       aes(x = max.spd, 
+           y = t.hrs/carowinds.ice.rthrs, 
+           color = factor(max.soc))) + 
+  geom_line() +
+  geom_point(aes(size = drive.hrs)) +
+  # scale_x_log10()+
+  # scale_y_log10()+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical")
+
+
+spd_time[spd_time$t.hrs == min(spd_time$t.hrs),]
