@@ -170,13 +170,42 @@ odscars %>%
 
 # chevy carowinds scenarios----
 
-cc <- function(max_spd     = NA, 
-               max_chrgpct = NA, 
-               total_hrs   = NA, 
-               charge_hrs  = NA, 
-               total_usd   = NA){
+cc <- function(max_spd    = NA, 
+               max_soc    = NA, 
+               total_hrs  = NA, 
+               charge_hrs = NA,
+               total_usd  = NA, 
+               mpkwh      = NA, 
+               miles      = NA, 
+               car = "chevy_bolt"){
   
+  data.frame(max.spd = max_spd, 
+             max.soc = max_soc, 
+             t.hrs = total_hrs, 
+             chrg.hrs = charge_hrs,
+             drive.hrs = total_hrs - charge_hrs,
+             t.usd = total_usd, 
+             mpkWh = mpkwh, 
+             miles = miles, 
+             car = car)  
 }
 
-cc.params <- expand.grid(maxMPH = c(60,65,70), 
-                         maxCHRG = c(50,60,70,80,90))
+cc.params <- expand.grid(maxMPH = c(seq(45,75,by=10)), 
+                         maxCHRG = c(50,60))
+
+as_tibble(rbind(cc(75,50, 
+                   7+9/60, 1+30/60, 30.2, 3.6, 322),
+                cc(70,50, 
+                   6+56/60, 1+30/60, 48.9, 3.56, 322),
+                cc(65,50, 
+                   6+57/60, 1+26/60, 36.5, 3.68, 322),
+                cc(60,50, 
+                   7+9/60, 1+19/60, 33.4, 3.88, 317),
+                cc(55,50, 
+                   7+30/60, 1+14/60, 28.7, 4.07, 316),
+                cc(50,50, 
+                   7+57/60, 1+9/60, 27.1, 4.26, 318),
+                cc(45,50, 
+                   8+37/60, 1+6/60, 44.2, 4.43, 316)))
+
+
