@@ -1,5 +1,6 @@
 library(dplyr)
 library(ggplot2)
+library(lubridate)
 
 library(renv)
 
@@ -32,10 +33,12 @@ refcon <- 3.8
 tripmi <- 200
 
 
-evtrip(tripmi, refcon, 0.39)  # 21.08
-evtrip(tripmi, refcon, 0.29)  # 15.68
-evtrip(tripmi, refcon, (0.39+0.28)/2)  # 18.11
+getprice_evgo <- function(date_time)
 
-gastrip(200, 31, 3.5)
+evtrip(tripmi, refcon, 0.34)  # 17.89
+evtrip(tripmi, refcon, 0.26)  # 13.68
+evtrip(tripmi, refcon, (0.34+0.26)/2)  # 15.79
+
+gastrip(200, 31, 3.5)  # 22.58
 
 
