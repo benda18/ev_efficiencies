@@ -327,3 +327,16 @@ ggplot(data = spd_time[spd_time$max.spd >= 60,],
 
 
 spd_time[spd_time$t.hrs == min(spd_time$t.hrs),]
+
+
+ggplot(data = spd_time, 
+       aes(x = drive.hrs, y = t.usd)) + 
+  geom_point(aes(color = factor(max.soc)), 
+             size = 4)+
+  geom_smooth(method = "lm")
+
+ggplot(data = spd_time, 
+       aes(x = chrg.hrs, y = t.usd)) + 
+  geom_point(aes(color = factor(max.soc)), 
+             size = 4)+
+  geom_smooth(method = "lm")
