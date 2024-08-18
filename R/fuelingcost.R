@@ -1,7 +1,6 @@
 library(dplyr)
 library(ggplot2)
 library(lubridate)
-
 library(renv)
 
 renv::status()
@@ -9,9 +8,13 @@ renv::snapshot()
 
 rm(list=ls());cat('\f')
 
+# vars----
+trip_mi  <- 200
+refcon   <- 3.8
+tripmi   <- 200
+temptime <- Sys.time()
 
-trip_mi <- 200
-
+# funs----
 evtrip <- function(trip_mi, 
                    mpKw = 3.7, 
                    USDperKw = 0.39){
@@ -29,11 +32,49 @@ gastrip <- function(trip_mi,
   return(trip_USD)
 }
 
-refcon <- 3.8
-tripmi <- 200
+
+getprice_evgo <- function(date_time){
+  require(dplyr)
+  temp.hr <- date_time %>% hour()
+  temp.min <- date_time %>% minute()
+  temp.min <- temp.min / 60
+  temp.sec <- date_time %>% second()
+  temp.sec <- temp.sec / 60 / 60
+  
+  temp.time <- temp.hr + 
+    temp.min + 
+    temp.sec
+  
+  price.out <- NA
+  
+  if(temp.time < 8){
+    price.out <- 0.26
+  }
+  
+  if(between(temp.time, 8, 10) | 
+     between(temp.time, 19, 24)){
+    price.out <- 0.30
+  }
+  
+  if(between(temp.time, 10, 19)){
+    price.out <- 0.34
+  }
+  # time
+  x <- temp.time
+  x.hour   <- x %/% 1
+  x.ampm   <- ifelse(x > 11, "PM", "AM")
+  x.hour   <- ifelse(x > 12, x - 12, x) %/% 1
+  x.minute <- ((x %% 1)*60) %/% 1
+  x.time <- paste(x.hour,":",x.minute," ", x.ampm, sep = "")
+  
+  return(list(time = x.time, 
+           price.per.Kw = price.out))
+}
+
+# analysis----
+getprice_evgo(temptime)
 
 
-getprice_evgo <- function(date_time)
 
 evtrip(tripmi, refcon, 0.34)  # 17.89
 evtrip(tripmi, refcon, 0.26)  # 13.68
