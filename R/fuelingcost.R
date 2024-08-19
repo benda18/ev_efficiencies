@@ -104,9 +104,10 @@ evtrip(tripmi, refcon, 0.17)  # 8.95
 gastrip(tripmi, 31, 3.5)  # 22.58
 
 
-fun_1 <- function(x,y) {(x^x) / log(x)}
 
-fun_1(x = 3, y = 2)
+# fffffffff
 
-ggplot() + 
-  geom_function(fun = fun_1)
+miles.per.month <- 4500
+refcon
+Kw.per.month    <- miles.per.month / refcon
+usd.per.month   <- 0.34 * Kw.per.month
