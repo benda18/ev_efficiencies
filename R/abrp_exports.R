@@ -2,9 +2,13 @@ library(dplyr)
 library(ggplot2)
 library(renv)
 library(readr)
+library(lubridate)
+library(janitor)
 
 renv::status()
 renv::snapshot()
+
+rm(list=ls());cat('\f')
 
 
 a.trip <- "Waypoint	Arrival SoC	Depart SoC	Cost	Charge Card	Charge duration	Distance	Drive duration	Arrival	Departure
@@ -24,7 +28,7 @@ Walmart 66 - Clarksville, AR [Electrify America]	18%	90%	$26		1 h 13 min	83 mi	1
 Cookson Hills - Sallisaw [EvGateway]	48%	63%			14 min	87 mi	1 h 7 min	7:39 PM	7:55 PM
 706 S Woody Guthrie St, Okemah [ChargePoint]	19%	49%			24 min	62 mi	50 min	9:02 PM	9:27 PM
 2917 S Douglas Blvd, Midwest City [ChargePoint]	19%	54%	$0		28 min	75 mi	1 h 1 min	10:17 PM	10:48 PM
-1401 N Airport Rd, Weatherford [ChargePoint]	18%	56%			30 min	77 mi	1 h 1 min	11:50 PM	12:23 AM (+1)
+1401 N Airport Rd, Weatherford [ChargePoint]	18%	56%			30 min	77 mi	1 h 1 min	11:50 PM	24:23
 Love's 253 - Erick, OK [Electrify America]	18%	80%	$22		57 min	108 mi	1 h 22 min	1:24 AM	2:22 AM
 Pilot Travel Center 723 [EVgo]	20%	83%	$24		1 h	117 mi	1 h 32 min	3:44 AM	4:46 AM
 Love's 262 (Tucumcari, NM) [Electrify America]	18%	51%	$12		26 min	57 mi	46 min	5:18 AM	5:49 AM
@@ -36,6 +40,87 @@ Flying J 612 [EVgo]	18%	53%	$13		28 min	58 mi	47 min	1:44 PM	2:13 PM
 2601 E. Huntington. Rd., Flagstaff [Electrify America]	18%	66%	$17		41 min	97 mi	1 h 27 min	3:00 PM	3:44 PM
 Prescott, AZ, United States	20%					0 m		5:11 PM	
 "
+a.trip <- gsub(" \\(\\+1\\)", "", a.trip)
+
+b.trip <- readr::read_tsv(a.trip, 
+                          col_types = c("c", "c", "c", 
+                                        "c", "c", "c", "c", 
+                                        "t", "t")) %>%
+  clean_names()
+
+b.trip$departure
 
 
-renv::install("readr")
+b.trip$arrival_so_c <- b.trip$arrival_so_c %>% 
+  gsub("%", "", .) %>% 
+  as.numeric()
+b.trip$depart_so_c <- b.trip$depart_so_c %>% 
+  gsub("%", "", .) %>% 
+  as.numeric()
+
+b.trip <- mutate(b.trip, 
+                 arrival_so_c = arrival_so_c / 100, 
+                 depart_so_c  = depart_so_c  / 100)
+
+b.trip$drive_duration
+b.trip$charge_duration <- b.trip$charge_duration %>% as.period() %>% as.numeric()  
+
+b.trip <- mutate(b.trip, 
+                 charge_duration  = as.numeric(as.period(charge_duration))/60/60, 
+                 drive_duration = as.numeric(as.period(drive_duration))/60/60)
+
+b.trip$cost     <- as.numeric(gsub("\\$", "", b.trip$cost))
+b.trip$distance <- as.numeric(gsub(" m.*$", "", b.trip$distance))
+
+b.trip <- mutate(b.trip, 
+                 soc_charged = depart_so_c - arrival_so_c)
+
+b.trip$soc_used <- NA
+for(i in 2:nrow(b.trip)){
+  b.trip$soc_used[i] <- b.trip$depart_so_c[i-1] - b.trip$arrival_so_c[i]
+}
+
+# b.trip$seg_duration <- NA
+# for(i in 2:nrow(b.trip)){
+#   b.trip$seg_duration[i] <- b.trip$departure[i-1] - b.trip$arrival[i]
+# }
+
+ggplot(data = b.trip, 
+       aes(y = arrival_so_c, x = depart_so_c, 
+           size = charge_duration)) + 
+  geom_point()+
+  geom_smooth(method = "lm")+
+  scale_y_continuous(#limits = c(0,1), 
+                     breaks = seq(0,1, by = 0.1), 
+                     labels = scales::percent) + 
+  scale_x_continuous(#limits = c(0,1), 
+                     breaks = seq(0,1, by = 0.1), 
+                     labels = scales::percent)+
+  scale_size_area()
+
+ggplot(data = b.trip, 
+       aes(x = cost, y = charge_duration)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_x_continuous(limits = c(0,NA)) +
+  scale_y_continuous(limits = c(0,NA))
+
+ggplot(data = b.trip, 
+       aes(x = soc_charged, y = charge_duration)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_x_continuous(limits = c(0,NA)) +
+  scale_y_continuous(limits = c(0,NA))
+
+ggplot() + 
+  geom_segment(data = b.trip, 
+               aes(x = arrival_so_c, xend = depart_so_c, 
+                   y = charge_duration, yend = charge_duration)) +
+  scale_x_continuous(limits = c(0,NA)) +
+  scale_y_continuous(limits = c(0,NA))
+
+ggplot() + 
+  geom_point(data = b.trip, 
+             aes(x = distance, y = drive_duration))
+
+plot(b.trip[,c(2,3,4,6,7,8,11,12)])
