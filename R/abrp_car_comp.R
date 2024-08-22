@@ -1361,27 +1361,51 @@ abrp.vc2 <- mutate(abrp.vc2,
                    avg_mph_moving = 70, 
                    min_leg_miles = 90, 
                    trip_ratio = as.numeric(abrp.vc2$ideal_drive_time*60)/
-                     (as.numeric(abrp.vc2$ideal_drive_time*60)+as.numeric(abrp.vc2$ideal_charge_time)))
+                     (as.numeric(abrp.vc2$ideal_drive_time*60) +
+                        as.numeric(abrp.vc2$ideal_charge_time)), 
+                   avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
 
 hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
-       (as.numeric(abrp.vc2$ideal_drive_time*60)+as.numeric(abrp.vc2$ideal_charge_time)))
+       (as.numeric(abrp.vc2$ideal_drive_time*60) +
+        as.numeric(abrp.vc2$ideal_charge_time)))
 
 ggplot(data = abrp.vc2, 
        aes(y = ideal_charge_time, 
            x = ideal_drive_time)) + 
-  geom_point() +
-  geom_smooth()
+  geom_point(color = "grey") +
+  geom_smooth()+
+  geom_point(data = abrp.vc2[grepl("Bolt EV 2019", abrp.vc2$model),], 
+             aes(x = ideal_drive_time, 
+                 y = ideal_charge_time)) +
+  scale_y_time(breaks = seq(0,12*60*60, by = 1800)) +
+  scale_x_time(breaks = seq(0,12*60*60, by = 1800)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
 
 ggplot(data = abrp.vc2, 
        aes(y = trip_ratio, 
            x = range_at_65mph)) + 
   geom_point(color = "grey") +
   geom_smooth(se = F) +
-  geom_point(data = abrp.vc2[grepl("Lucid", x = abrp.vc2$model, F),], 
+  geom_point(data = abrp.vc2[grepl("Bolt", x = abrp.vc2$model, F),], 
              aes(y = trip_ratio, 
                  x = range_at_65mph), 
              color = "black")+
   theme(legend.position = "none")
+
+
+ggplot() + 
+  geom_density(data = abrp.vc2, 
+               aes(x = avg_trip_mph)) +
+  scale_x_continuous(limits = c(40,70), 
+                     breaks = seq(0,70,by=5))+
+  geom_vline(data = abrp.vc2[grepl("Mustang .*2021 Standard Range.* RWD|Bolt EV 2019\\+|Volkswagen ID.4 2021.*Pure|Tesla Model Y 2020 .*Standard|Lucid Air Dream Edition \\(", 
+                                   abrp.vc2$model),], 
+             aes(xintercept = avg_trip_mph, 
+                 color = model), 
+             linewidth = 1.2)+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical")
 
 
 # The road trip values shown are computed on a hypothetical road trip of 600mi
