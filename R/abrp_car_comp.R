@@ -1365,6 +1365,39 @@ abrp.vc2 <- mutate(abrp.vc2,
                         as.numeric(abrp.vc2$ideal_charge_time)), 
                    avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
 
+
+# data cleanup----
+# make
+abrp.vc2$make <- abrp.vc2$model %>%
+  strsplit(., " ") %>%
+  lapply(., nth, 1) %>%
+  unlist()
+
+# model-year
+abrp.vc2$model  %>%
+  lapply(., gsub, pattern = "2012\\+\\(14.5", 
+         replacement = "2012+ (14.5")  %>%
+  unlist() %>%
+  strsplit(., " ") %>%
+  lapply(., grep, 
+         pattern = "^20\\d{2,2}.*{0,5}|^\\(2021-\\)$", value = T) %>%
+  unlist() %>%
+  unique() %>% sort()
+
+grep(pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
+     x = unlist(strsplit(abrp.vc2$model, " ")), 
+     value = T) %>%
+  unique() %>% sort()
+
+
+# model family
+abrp.vc2$make %>%
+  sort() 
+
+# model name
+
+
+# explore----
 hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
        (as.numeric(abrp.vc2$ideal_drive_time*60) +
         as.numeric(abrp.vc2$ideal_charge_time)))
@@ -1394,19 +1427,55 @@ ggplot(data = abrp.vc2,
   theme(legend.position = "none")
 
 
+fivenum(abrp.vc2$avg_trip_mph)[c(2:4)]
+
 ggplot() + 
   geom_density(data = abrp.vc2, 
                aes(x = avg_trip_mph)) +
-  scale_x_continuous(limits = c(40,70), 
+  scale_x_continuous(limits = c(45,70), 
                      breaks = seq(0,70,by=5))+
-  geom_vline(data = abrp.vc2[grepl("Mustang .*2021 Standard Range.* RWD|Bolt EV 2019\\+|Volkswagen ID.4 2021.*Pure|Tesla Model Y 2020 .*Standard|Lucid Air Dream Edition \\(", 
+  geom_vline(data = abrp.vc2[grepl("Nissan Leaf.*62|Mustang .*2021 Standard Range.* RWD|Bolt EV 2019\\+|Volkswagen ID.4 2021.*Pure|Tesla Model Y 2020 .*Standard|Lucid Air Dream Edition \\(", 
                                    abrp.vc2$model),], 
              aes(xintercept = avg_trip_mph, 
                  color = model), 
              linewidth = 1.2)+
   theme(legend.position = "bottom", 
-        legend.direction = "vertical")
+        legend.direction = "vertical") +
+  geom_vline(aes(xintercept = fivenum(abrp.vc2$avg_trip_mph)[c(2,4)]), 
+             linetype = 2232) +
+  geom_vline(aes(xintercept = median(abrp.vc2$avg_trip_mph, na.rm = T)), 
+             linetype = 2232, size = 1.2)
 
+fivenum(abrp.vc2$total_trip_time)
+ggplot() + 
+  geom_density(data = abrp.vc2[abrp.vc2$total_trip_time <= 42540*1.125,], 
+               aes(x = total_trip_time)) +
+  # scale_x_continuous(limits = c(45,70), 
+  #                    breaks = seq(0,70,by=5))+
+  geom_vline(data = abrp.vc2[grepl("Nissan Leaf.*62|Mustang .*2021 Standard Range.* RWD|Bolt EV 2019\\+|Volkswagen ID.4 2021.*Pure|Tesla Model Y 2020 .*Standard|Lucid Air Dream Edition \\(", 
+                                   abrp.vc2$model),], 
+             aes(xintercept = total_trip_time, 
+                 color = model), 
+             linewidth = 1.2)+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical") +
+  geom_vline(aes(xintercept = fivenum(abrp.vc2$total_trip_time)[c(2,4)]), 
+             linetype = 2232) +
+  geom_vline(aes(xintercept = median(abrp.vc2$total_trip_time, na.rm = T)), 
+             linetype = 2232, size = 1.2)
+
+abrp.vc2[abrp.vc2$avg_trip_mph <= max(abrp.vc2$avg_trip_mph[grepl("Bolt EV", abrp.vc2$model)]),]$model %>%
+  sort()
+
+ggplot() + 
+  geom_point(data = abrp.vc2, 
+             aes(x = trip_ratio, 
+                 y = range_at_65mph), 
+             color = "grey")+
+  geom_point(data = abrp.vc2[grepl("Bolt EV", abrp.vc2$model),], 
+             aes(x = trip_ratio, 
+                 y = range_at_65mph), 
+             color = "red")
 
 # The road trip values shown are computed on a hypothetical road trip of 600mi
 # at an average speed of 70mph and a minimum leg length of 90mi (to model
