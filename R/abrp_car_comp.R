@@ -1354,6 +1354,34 @@ abrp.vc2 <- read_tsv(abrp.vc,
 
 abrp.vc2 <- abrp.vc2[(1:nrow(abrp.vc2))[1:nrow(abrp.vc2) %%2 == 1],]
 
+tail(abrp.vc2)
+
+abrp.vc2 <- mutate(abrp.vc2, 
+                   trip_miles = 600, 
+                   avg_mph_moving = 70, 
+                   min_leg_miles = 90, 
+                   trip_ratio = as.numeric(abrp.vc2$ideal_drive_time*60)/
+                     (as.numeric(abrp.vc2$ideal_drive_time*60)+as.numeric(abrp.vc2$ideal_charge_time)))
+
+hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
+       (as.numeric(abrp.vc2$ideal_drive_time*60)+as.numeric(abrp.vc2$ideal_charge_time)))
+
+ggplot(data = abrp.vc2, 
+       aes(y = ideal_charge_time, 
+           x = ideal_drive_time)) + 
+  geom_point() +
+  geom_smooth()
+
+ggplot(data = abrp.vc2, 
+       aes(y = trip_ratio, 
+           x = range_at_65mph)) + 
+  geom_point(color = "grey") +
+  geom_smooth(se = F) +
+  geom_point(data = abrp.vc2[grepl("Lucid", x = abrp.vc2$model, F),], 
+             aes(y = trip_ratio, 
+                 x = range_at_65mph), 
+             color = "black")+
+  theme(legend.position = "none")
 
 
 # The road trip values shown are computed on a hypothetical road trip of 600mi
