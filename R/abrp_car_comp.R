@@ -1374,15 +1374,45 @@ abrp.vc2$make <- abrp.vc2$model %>%
   unlist()
 
 # model-year
-abrp.vc2$model  %>%
+temp <- abrp.vc2$model  %>%
   lapply(., gsub, pattern = "2012\\+\\(14.5", 
          replacement = "2012+ (14.5")  %>%
   unlist() %>%
   strsplit(., " ") %>%
   lapply(., grep, 
-         pattern = "^20\\d{2,2}.*{0,5}|^\\(2021-\\)$", value = T) %>%
-  unlist() %>%
-  unique() %>% sort()
+         #pattern = "^20\\d{2,2}.*{0,5}|^\\(2021-\\)$", value = T) %>%
+         pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
+         value = T) 
+
+#abrp.vc2$with_model.year <- F
+
+temp2 <- list()
+for(i in 1:length(temp)){
+  temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, abort = function() {})))
+}
+abrp.vc2$with_model.year <- unlist(temp2)
+
+
+
+
+# tryCatch(1, finally = print("Hello"))
+# e <- simpleError("test error")
+# ## Not run: 
+# stop(e)
+# tryCatch(stop(e), finally = print("Hello"))
+# tryCatch(stop("fred"), finally = print("Hello"))
+# 
+# tryCatch(stop(e), error = function(e) e, finally = print("Hello"))
+# tryCatch(stop("fred"),  error = function(e) e, finally = print("Hello"))
+# withCallingHandlers({ warning("A"); 1+2 }, warning = function(w) {})
+# ## Not run: 
+# { withRestarts(stop("A"), abort = function() {}); 1 }
+# 
+# ## End(Not run)
+# withRestarts(invokeRestart("foo", 1, 2), foo = function(x, y) {x + y})
+# 
+# ##--> More examples are part of
+# ##-->   demo(error.catching)
 
 grep(pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
      x = unlist(strsplit(abrp.vc2$model, " ")), 
