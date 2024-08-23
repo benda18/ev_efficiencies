@@ -1347,20 +1347,20 @@ Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30
                        col_names = c("model", "range_at_65mph", 
                                      "ideal_charge_time", "ideal_drive_time", 
                                      "stops", "total_trip_time", "trip_ratio"))
-
-
-
-abrp.vc2 <- abrp.vc2[(1:nrow(abrp.vc2))[1:nrow(abrp.vc2) %%2 == 1],]
-
-abrp.vc2 <- mutate(abrp.vc2, 
-                   trip_miles = 600, 
-                   avg_mph_moving = 70, 
-                   min_leg_miles = 90, 
-                   trip_ratio = as.numeric(abrp.vc2$ideal_drive_time*60)/
-                     (as.numeric(abrp.vc2$ideal_drive_time*60) +
-                        as.numeric(abrp.vc2$ideal_charge_time)), 
-                   avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
-
+  
+  
+  
+  abrp.vc2 <- abrp.vc2[(1:nrow(abrp.vc2))[1:nrow(abrp.vc2) %%2 == 1],]
+  
+  abrp.vc2 <- mutate(abrp.vc2, 
+                     trip_miles = 600, 
+                     avg_mph_moving = 70, 
+                     min_leg_miles = 90, 
+                     trip_ratio = as.numeric(abrp.vc2$ideal_drive_time*60)/
+                       (as.numeric(abrp.vc2$ideal_drive_time*60) +
+                          as.numeric(abrp.vc2$ideal_charge_time)), 
+                     avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
+  
 }
 
 # data cleanup----
@@ -1473,23 +1473,64 @@ abrp.vc2$model_family <- abrp.vc2$model %>%
 for(i in 1:length(abrp.vc2$model_family)){
   abrp.vc2$model_family[i] <- gsub(pattern = abrp.vc2$make[i], 
                                    replacement = "", 
-                                   x = abrp.vc2$model_family[i]) %>% trimws()
+                                   x = abrp.vc2$model_family[i]) %>% 
+    trimws() %>%
+    gsub(" {1,100}", " ", .) 
 }
 
+
+abrp.vc2[abrp.vc2$make %in% 
+           sort(unique(abrp.vc2$make))[4], ]$model_family %>%
+  unique() %>% 
+  sort()
+
+# model family cleanup----
+
+abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dual Motor|Single Motor|Single motor|Quad Motor|Tri Motor|Twin Motor|Sedan|Turismo|Turbo|TurboS|GTS| EV |Sport", "", 
+     abrp.vc2$model_family) %>%
+  gsub("Performance|Standard|Large|Pack| Base|GTX| Cross| 4S| 4$| R$| RST| RS |Range| SS| LT| WT", "", .) %>%
+  gsub("Mid|Long| 4 |Electric| Pro| S\\>| \\+|\\+\\>| Pure|Ultra|One|Extreme|Extended GT$|Extended| GTX\\>", "", .) %>%
+  gsub("Low Roof|High Roof|Tourer| LWB$|Max|Recharge| \\d{1,}$|edition|Edition|BST|Electrified|Luxury", "", .) %>%
+  gsub(" N\\>| GT\\>| EV\\d{3,3}\\>|Touring| AMG|Upgrade|Extender|Se|SUV|Maybach|Hatchback|Convertible|Cyberbeast| p\\>", "", .) %>%
+  gsub(" e\\>| Medium Roof|\\+|-|Sapphire|Dream|Grand|Altitude|1st|itude|Summit|P6| ER", "", .) %>%
+  gsub("Blazere|Blazer| Premium", "",.) %>%
+  gsub("Bolt EV", "Bolt", .) %>%
+  gsub(" {1,100}", " ", .) %>% trimws() 
+
+# abrp.vc2$model_family <- gsub(pattern = "e-tron.*$", 
+#                               replacement = "e-tron", x = abrp.vc2$model_family)
+# abrp.vc2$model_family[abrp.vc2$make == "BMW"] <- gsub(pattern = " .*$", 
+#                                                       replacement = "", 
+#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "BMW"])
+# abrp.vc2$model_family[abrp.vc2$make == "BYD"] <- gsub(pattern = " Mini| Long Range| Standard Range| Extended Range| AWD| S1/Yuan Pro", 
+#                                                       replacement = "", 
+#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "BYD"])
+# abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " Mini| Long Range| Standard Range| Extended Range| AWD| S1/Yuan Pro", 
+#                                                       replacement = "", 
+#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Cadillac"])
 
 abrp.vc2 %>%
   group_by(make, model_family) %>%
   summarise(n = n())
 
 
-# model name
-abrp.vc2$model %>%
-  gsub("\\(alpha\\).*$|\\(beta\\).*$", "", .) %>%
-  gsub(pattern = " 20\\d{2,2}| 20\\d{2,2}-20\\d{2,2} {0,}", "", .) %>% 
-  trimws() %>%
-  unique() %>% sort() 
 
 # explore----
+
+
+  abrp.vc2[abrp.vc2$make %in% "Chevrolet" & 
+             abrp.vc2$model_family %in% "Bolt",]$model
+
+colnames(abrp.vc2)
+
+abrp.vc2[grepl("Bolt", abrp.vc2$model),] %>%
+  group_by(make, model_family,
+           ideal_charge_time, ideal_drive_time, 
+           trip_ratio) %>%
+  summarise(n = n())
+
+
+
 hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
        (as.numeric(abrp.vc2$ideal_drive_time*60) +
           as.numeric(abrp.vc2$ideal_charge_time)))
