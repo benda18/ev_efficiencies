@@ -7,9 +7,10 @@ library(janitor)
 renv::status()
 renv::snapshot()
 
-rm(list=ls());cat('\f')
+rm(list= ls()[!ls() %in% "abrp.vc2"]);cat('\f')
 
-abrp.vc <- "Lucid Air Dream Edition (alpha)	486	00:16	03:28	2	09:09	
+if(!exists("abrp.vc2")){ 
+  abrp.vc2 <- read_tsv("Lucid Air Dream Edition (alpha)	486	00:16	03:28	2	09:09	
 92.7%
 Lucid Air Sapphire (alpha)	459	00:16	03:18	2	09:10	
 92.4%
@@ -1342,19 +1343,14 @@ Arcimoto FUV (alpha)	40	04:15	00:24	21	98:59
 Ford Azure Transit Connect Electric (alpha)	48	07:33	00:30	16	136:23	
 6.2%
 Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30	
-6%"
+6%", 
+                       col_names = c("model", "range_at_65mph", 
+                                     "ideal_charge_time", "ideal_drive_time", 
+                                     "stops", "total_trip_time", "trip_ratio"))
 
-
-
-abrp.vc2 <- read_tsv(abrp.vc, 
-                     col_names = c("model", "range_at_65mph", 
-                                   "ideal_charge_time", "ideal_drive_time", 
-                                   "stops", "total_trip_time", "trip_ratio"))
 
 
 abrp.vc2 <- abrp.vc2[(1:nrow(abrp.vc2))[1:nrow(abrp.vc2) %%2 == 1],]
-
-tail(abrp.vc2)
 
 abrp.vc2 <- mutate(abrp.vc2, 
                    trip_miles = 600, 
@@ -1365,6 +1361,7 @@ abrp.vc2 <- mutate(abrp.vc2,
                         as.numeric(abrp.vc2$ideal_charge_time)), 
                    avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
 
+}
 
 # data cleanup----
 # make
@@ -1374,6 +1371,11 @@ abrp.vc2$make <- abrp.vc2$model %>%
   unlist()
 
 # model-year
+abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = abrp.vc2$model)
+abrp.vc2$model <- gsub(pattern = " 2020-21 ", replacement = " 2020-2021 ", x = abrp.vc2$model)
+abrp.vc2$model <- gsub(pattern = " 2018-19 ", replacement = " 2018-2019 ", x = abrp.vc2$model)
+abrp.vc2$model <- gsub(pattern = " 2015-19 ", replacement = " 2015-2019 ", x = abrp.vc2$model)
+
 temp <- abrp.vc2$model  %>%
   lapply(., gsub, pattern = "2012\\+\\(14.5", 
          replacement = "2012+ (14.5")  %>%
@@ -1384,41 +1386,23 @@ temp <- abrp.vc2$model  %>%
          pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
          value = T) 
 
-#abrp.vc2$with_model.year <- F
-
 temp2 <- list()
 for(i in 1:length(temp)){
-  temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, abort = function() {})))
+  temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, 
+                                            abort = function() {})))
 }
 abrp.vc2$with_model.year <- unlist(temp2)
+abrp.vc2$model_year      <- NA
 
+for(i in 1:length(temp2)){
+  if(temp2[[i]] == T){
+    #print(temp[[i]])
+    abrp.vc2$model_year[i] <- temp[[i]]
+  }
+}
 
-
-
-# tryCatch(1, finally = print("Hello"))
-# e <- simpleError("test error")
-# ## Not run: 
-# stop(e)
-# tryCatch(stop(e), finally = print("Hello"))
-# tryCatch(stop("fred"), finally = print("Hello"))
-# 
-# tryCatch(stop(e), error = function(e) e, finally = print("Hello"))
-# tryCatch(stop("fred"),  error = function(e) e, finally = print("Hello"))
-# withCallingHandlers({ warning("A"); 1+2 }, warning = function(w) {})
-# ## Not run: 
-# { withRestarts(stop("A"), abort = function() {}); 1 }
-# 
-# ## End(Not run)
-# withRestarts(invokeRestart("foo", 1, 2), foo = function(x, y) {x + y})
-# 
-# ##--> More examples are part of
-# ##-->   demo(error.catching)
-
-grep(pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
-     x = unlist(strsplit(abrp.vc2$model, " ")), 
-     value = T) %>%
-  unique() %>% sort()
-
+abrp.vc2[!is.na(abrp.vc2$model_year),"model_year"]$model_year %>%
+  table()
 
 # model family
 abrp.vc2$make %>%
@@ -1430,7 +1414,7 @@ abrp.vc2$make %>%
 # explore----
 hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
        (as.numeric(abrp.vc2$ideal_drive_time*60) +
-        as.numeric(abrp.vc2$ideal_charge_time)))
+          as.numeric(abrp.vc2$ideal_charge_time)))
 
 ggplot(data = abrp.vc2, 
        aes(y = ideal_charge_time, 
