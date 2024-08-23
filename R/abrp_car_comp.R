@@ -1364,11 +1364,26 @@ abrp.vc2 <- mutate(abrp.vc2,
 }
 
 # data cleanup----
+
+
 # make
 abrp.vc2$make <- abrp.vc2$model %>%
   strsplit(., " ") %>%
   lapply(., nth, 1) %>%
   unlist()
+
+na.makes <- c("Cadillac", "Chevrolet", "BMW", "Audi", 
+              "Fiat", "Fisker", "Ford", "Genesis", "GMC", 
+              "Harley-Davidson", "Honda", "Hyundai", "Jaguar", 
+              "Jeep", "Kia", "Lexus", 
+              "Lightyear", "MG", "Nio", "BYD", # maybe/???
+              "Lotus", "Lucid", "Mazda", "Mercedes-Benz", "Mini", 
+              "Mitsubishi", "Nissan", "Polestar", "Porsche", 
+              "Rivian", "Subaru", "Tesla", "Toyota", "Vinfast", 
+              "Volkswagen", "Volvo") %>%
+  paste(., sep = "|", collapse = "|")
+
+abrp.vc2 <- abrp.vc2[grepl(pattern = na.makes, x = abrp.vc2$model),]
 
 # model-year
 abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = abrp.vc2$model)
@@ -1391,6 +1406,7 @@ for(i in 1:length(temp)){
   temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, 
                                             abort = function() {})))
 }
+
 abrp.vc2$with_model.year <- unlist(temp2)
 abrp.vc2$model_year      <- NA
 
@@ -1405,11 +1421,65 @@ abrp.vc2[!is.na(abrp.vc2$model_year),"model_year"]$model_year %>%
   table()
 
 # model family
-abrp.vc2$make %>%
-  sort() 
+# general tidy
+abrp.vc2$model <- gsub("Tesla Model S {0}",  "Tesla Model S ", abrp.vc2$model)
+abrp.vc2$model <- gsub("^Tesla Model 3 {0}",  "Tesla Model 3 ", abrp.vc2$model)
+abrp.vc2$model <- gsub("^Tesla Model X {0}",  "Tesla Model X ", abrp.vc2$model)
+abrp.vc2$model <- gsub("^Tesla Model Y {0}",  "Tesla Model Y ", abrp.vc2$model)
+#gsub("EV6Long", "EV6 Long", abrp.vc2$model) %>% grep("Kia", ., value = T)
+abrp.vc2$model <- gsub("^Volvo XC40 {0}",  "Volvo XC40 ", abrp.vc2$model)
+abrp.vc2$model <- gsub("^Volvo C40 {0}",  "Volvo C40 ", abrp.vc2$model)
+abrp.vc2$model <- gsub("R1S",  "R1S ", abrp.vc2$model)
+abrp.vc2$model <- gsub("R1T",  "R1T ", abrp.vc2$model)
+
+abrp.vc2$model_family <- abrp.vc2$model
+
+abrp.vc2$model %>%
+  #grep("^Hyundai", ., value = T, ignore.case = T) %>% 
+  gsub("\\(alpha\\).*$|\\(beta\\).*$", "", .) %>%
+  gsub(pattern = "20\\d{2,2}\\+", " ", .) %>%
+  gsub(pattern = "20\\d{2,2}-\\d{0,4} {0,}", "", .) %>%
+  gsub(pattern = " 20\\d{2,2}| 20\\d{2,2}-20\\d{2,2} {0,}", " ", .) %>% 
+  gsub(" \\d{2,2} {0,}in {0,}", "", .) %>%  # wheel size, esp. tesla
+  gsub("All.Wheel.Drive", "AWD", .) %>%
+  gsub("Rear.Wheel.Drive", "RWD", .) %>%
+  gsub("range", "Range", .) %>%
+  gsub("ID\\.4Pro ", "ID\\.4 Pro ", .) %>%
+  gsub("ID\\.3Pro ", "ID\\.3 Pro ", .) %>%
+  gsub("ID\\.3Pure ", "ID\\.3 Pure ", .) %>%
+  gsub("ID\\.4Standard ", "ID\\.4 Standard ", .) %>%
+  gsub("ID\\.4GTX ", "ID\\.4 GTX ", .) %>%
+  gsub("range", "Range", .) %>%
+  gsub("RWD", " RWD ", .) %>% gsub("AWD", " AWD ", .) %>% gsub("Turbo", " Turbo", .) %>%
+  gsub("Turbo S", "TurboS", .) %>%
+  gsub("GTS", " GTS ", .) %>% gsub("4S", " 4S ", .) %>% gsub("Turismo4", "Turismo 4 ", .) %>%
+  gsub("\\d{1,3},{0,1}\\.{0,1}\\d{0,2} kwh{0,1}", "", ., ignore.case = T) %>%
+  gsub("4680 battery|NCA battery", "", .) %>%
+  gsub("Fortwo", "ForTwo", .) %>%
+  gsub("Forfour", "ForFour", .) %>%
+  gsub("\\( {0,}AWD {0,}\\)", "AWD", .) %>%
+  gsub("\\( {0,}FWD {0,}\\)", "FWD", .) %>%
+  gsub("\\( {0,}RWD {0,}\\)", "RWD", .) %>%
+  gsub(" 5 {1,}US Long ", " 5 Long ", .) %>%
+  gsub(" 5 {1,}Europe Long ", " 5 Long ", .) %>%
+  gsub(" 5 {1,}US Standard ", " 5 Standard ", .) %>%
+  gsub(" 5 {1,}Europe {1,}Standard ", " 5 Standard ", .) %>%
+  gsub("\\(\\d{0,2}\\)", "", .) %>%
+  gsub("Range Upgrade \\(Raven\\)", "", .) %>%
+  gsub(" {1,100}", " ", .) %>%
+ 
+  #grep("\\d{2,2}$", ., value = T) %>%
+  trimws() %>% 
+  unique() %>% sort()
+
+grep("18$", abrp.vc2$model, value = T)
 
 # model name
-
+abrp.vc2$model %>%
+  gsub("\\(alpha\\).*$|\\(beta\\).*$", "", .) %>%
+  gsub(pattern = " 20\\d{2,2}| 20\\d{2,2}-20\\d{2,2} {0,}", "", .) %>% 
+  trimws() %>%
+  unique() %>% sort() 
 
 # explore----
 hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
