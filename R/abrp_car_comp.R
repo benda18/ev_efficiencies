@@ -1432,10 +1432,8 @@ abrp.vc2$model <- gsub("^Volvo C40 {0}",  "Volvo C40 ", abrp.vc2$model)
 abrp.vc2$model <- gsub("R1S",  "R1S ", abrp.vc2$model)
 abrp.vc2$model <- gsub("R1T",  "R1T ", abrp.vc2$model)
 
-abrp.vc2$model_family <- abrp.vc2$model
-
-abrp.vc2$model %>%
-  #grep("^Hyundai", ., value = T, ignore.case = T) %>% 
+abrp.vc2$model_family <- abrp.vc2$model %>%
+  #grep("^Tesla", ., value = T, ignore.case = T) %>% 
   gsub("\\(alpha\\).*$|\\(beta\\).*$", "", .) %>%
   gsub(pattern = "20\\d{2,2}\\+", " ", .) %>%
   gsub(pattern = "20\\d{2,2}-\\d{0,4} {0,}", "", .) %>%
@@ -1454,7 +1452,7 @@ abrp.vc2$model %>%
   gsub("Turbo S", "TurboS", .) %>%
   gsub("GTS", " GTS ", .) %>% gsub("4S", " 4S ", .) %>% gsub("Turismo4", "Turismo 4 ", .) %>%
   gsub("\\d{1,3},{0,1}\\.{0,1}\\d{0,2} kwh{0,1}", "", ., ignore.case = T) %>%
-  gsub("4680 battery|NCA battery", "", .) %>%
+  gsub("4680 battery|NCA battery| LFP", "", .) %>%
   gsub("Fortwo", "ForTwo", .) %>%
   gsub("Forfour", "ForFour", .) %>%
   gsub("\\( {0,}AWD {0,}\\)", "AWD", .) %>%
@@ -1464,15 +1462,25 @@ abrp.vc2$model %>%
   gsub(" 5 {1,}Europe Long ", " 5 Long ", .) %>%
   gsub(" 5 {1,}US Standard ", " 5 Standard ", .) %>%
   gsub(" 5 {1,}Europe {1,}Standard ", " 5 Standard ", .) %>%
+  gsub(" P{0,1}\\d{2,3}D{0,1}| Plaid", "", ., ignore.case = F) %>%
   gsub("\\(\\d{0,2}\\)", "", .) %>%
-  gsub("Range Upgrade \\(Raven\\)", "", .) %>%
+  gsub("Range Upgrade \\(Raven\\)", "", .) %>% 
+  gsub(" Early | Facelift ", " ", .) %>%
+  gsub("Aero$|Minus$|Plus$|Plus ", "", .) %>%
   gsub(" {1,100}", " ", .) %>%
- 
-  #grep("\\d{2,2}$", ., value = T) %>%
-  trimws() %>% 
-  unique() %>% sort()
+  trimws() 
 
-grep("18$", abrp.vc2$model, value = T)
+for(i in 1:length(abrp.vc2$model_family)){
+  abrp.vc2$model_family[i] <- gsub(pattern = abrp.vc2$make[i], 
+                                   replacement = "", 
+                                   x = abrp.vc2$model_family[i]) %>% trimws()
+}
+
+
+abrp.vc2 %>%
+  group_by(make, model_family) %>%
+  summarise(n = n())
+
 
 # model name
 abrp.vc2$model %>%
