@@ -1666,7 +1666,9 @@ abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq
 
 # years----
 
-??dcast
+abrp.vc2.my <- abrp.vc2[,c("make", "model_family", "model_year")] %>%
+  group_by(make, model_family, model_year) %>%
+  summarise(n = n())
 
 
 

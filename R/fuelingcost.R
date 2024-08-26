@@ -186,9 +186,18 @@ bolt.wbeach <- rbind(boltc(18,61,36,26.6),
   mutate(., 
          trip_name = "wrightsville beach")
 
+bolt.ashe <- rbind(boltc(37,84, 50, 29.5), 
+                   boltc(18,79,58,38.3), 
+                   boltc(21,75,51,33.7), 
+                   boltc(14, 56,37,26.9), 
+                   boltc(18,79,58,38.2), 
+                   boltc(21,75,51,33.8)) %>%
+  mutate(., trip_name = "asheville")
+
 bolt.all <- rbind(bolt.caro,
                   bolt.cincy, 
-                  bolt.wbeach)
+                  bolt.wbeach, 
+                  bolt.ashe)
 
 
 slice.prop <- 0.33
@@ -232,3 +241,82 @@ ggplot(data = bolt.all,
   coord_quickmap() +
   scale_x_continuous(limits = c(0,1)) +
   scale_y_continuous(limits = c(0,1))
+
+bolt.all %>%
+  group_by(soc.start, 
+           soc.end) %>%
+  summarise(n = n(), 
+            #min.chrg.hrs = min(hrs.chrg),
+            med.chrg.hrs = median(hrs.chrg),
+            #max.chrg.hrs = max(hrs.chrg), 
+            med.kwh.chrg = median(kwh.chrg)) 
+
+ggplot() + 
+  geom_point()+
+  geom_col(data = bolt.all, 
+           aes(x = soc.end, 
+               y = soc.end-soc.start, 
+               fill = trip_name), 
+           position = "dodge", 
+           color = "black")+
+  theme(legend.position = "bottom")
+
+ggplot() + 
+  geom_segment(data = bolt.all,
+               aes(x = soc.start, xend = soc.end, 
+                   y = 0, yend = hrs.chrg*60))+
+  scale_y_continuous(name = "mins charged", 
+                     breaks = seq(0,1000,by = 5)) + 
+  scale_x_continuous(name = "SoC", limits = c(0,1), 
+                     breaks = seq(0,1,by=0.1), 
+                     labels = scales::percent)+
+  facet_grid()
+
+
+# explore drive speeds----
+
+bspd <- function(max.spd, 
+                 kwh.used,  
+                 t.hrs, origin, dest){
+  data.frame(max_spd = max.spd, 
+             kwh_used = kwh.used, 
+             t_hrs = t.hrs, 
+             origin = origin, 
+             destination = dest)
+}
+
+x <- rbind(bspd(80, 230.1, 15+49/60, "Durham", "ATL"),
+           bspd(74, 228.2, 15+54/60, "Durham", "ATL"),
+           bspd(72, 225.3, 16+3/60, "Durham", "ATL"),
+           bspd(70, 222.2, 16+8/60, "Durham", "ATL"), 
+           bspd(68, 218, 16+15/60, "Durham", "ATL"), 
+           bspd(66, 214.5, 16+18/60, "Durham", "ATL"),
+           bspd(64, 210.2, 16+29/60, "Durham", "ATL"),
+           bspd(84, 229.9, 15+59/60, "Durham", "ATL"),
+           bspd(60, 201.2, 17+7/60, "Durham", "ATL"),
+           bspd(62, 205.1, 16+54/60, "Durham", "ATL"),
+           bspd(58, 197.1, 17+27/60, "Durham", "ATL"),
+           bspd(56, 193.2, 17+49/60, "Durham", "ATL"),
+           bspd(50, 181.5, 19+17/60, "Durham", "ATL"),
+           bspd(93, 229.9, 15+59/60, "Durham", "ATL"))
+
+ggplot(data = x, 
+       aes(y = kwh_used, 
+           x = t_hrs)) + 
+  geom_point() +
+  geom_smooth(method = "auto", 
+              se = F) 
+
+ggplot(data = x, 
+       aes(x = max_spd, 
+           y = t_hrs)) + 
+  geom_point() +
+  geom_smooth(method = "auto", 
+              se = F) 
+
+ggplot(data = x, 
+       aes(x = max_spd, 
+           y = kwh_used)) + 
+  geom_point() +
+  geom_smooth(method = "auto", 
+              se = F) 
