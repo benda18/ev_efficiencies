@@ -87,7 +87,7 @@ getprice_evgo <- function(date_time){
                   x.ampm,
                   sep = "")
   return(list(time = x.time, 
-           price.per.Kw = price.out))
+              price.per.Kw = price.out))
 }
 
 # analysis----
@@ -115,39 +115,132 @@ usd.per.month   <- 0.34 * Kw.per.month
 
 # Bolt_energy_plusminus----
 
-bolt_pm <- function(#soc_start.drive  = 77,
-                    #miles.A_drive    = 55,
-                    #hrs.A_drive      = 0 + 51/60,
-                    soc_start.charge = 50,
-                    soc_end.charge   = 78,
-                    hrs_charge       = 0 + 34/60,
-                    KwH_charge       = 17.7){ 
-                    #miles.B_drive    = 101,
-                    #soc_end.drive    = 30,
-                    #hrs.B_drive      = 1 + 28/60){ 
+boltc <- function(soc_start,
+                  soc_end,
+                  t_hrs,
+                  t_kwh){ 
   # functions
   require(dplyr)
-  #require(ggplot2)
-  
   # convert soc to decimal if not already
-  # if(soc_start.drive > 1){
-  #   soc_start.drive <- soc_start.drive / 100
-  # }
-  if(soc_start.charge > 1){
-    soc_start.charge <- soc_start.charge / 100
+  if(soc_start > 1){
+    soc_start <- soc_start / 100
   }
-  if(soc_end.charge > 1){
-    soc_end.charge <- soc_end.charge / 100
+  if(soc_end > 1){
+    soc_end <- soc_end / 100
   }
-  # if(soc_end.drive > 1){
-  #   soc_end.drive <- soc_end.drive / 100
-  # }
   # magnitude correct hours
-  #if(hrs.A_drive > 4){ hrs.A_drive <- hrs.A_drive / 60 }
-  if(hrs_charge > 4) { hrs_charge  <- hrs_charge  / 60 }
-  #if(hrs.B_drive > 4){ hrs.B_drive <- hrs.B_drive / 60 }
+  if(t_hrs > 4) { t_hrs  <- t_hrs  / 60 }
   
+  temp.df <- data.frame(soc.start = soc_start, 
+                        soc.end   = soc_end, 
+                        hrs.chrg  = t_hrs, 
+                        kwh.chrg  = t_kwh) %>%
+    mutate(., 
+           kwh.per.hr =kwh.chrg / hrs.chrg )
   
+  return(temp.df)
 }
 
-bolt_pm()
+
+
+bolt.caro <- rbind(boltc(soc_start = 50, 
+                         soc_end   = 78, 
+                         t_hrs     = 34/60, 
+                         t_kwh     = 17.7), 
+                   boltc(soc_start = 21,
+                         soc_end   = 85,
+                         t_hrs     = 68/60,
+                         t_kwh     = 39.6),
+                   boltc(soc_start = 19,
+                         soc_end   = 56,
+                         t_hrs     = 35/60,
+                         t_kwh     = 23.8), 
+                   boltc(20,85,
+                         69/60, 40.3), 
+                   boltc(41,70, 
+                         30/60, 18), 
+                   boltc(21,60,
+                         37/60,24.4), 
+                   boltc(33,56,
+                         25/60,14.6))
+bolt.cincy <- rbind(boltc(48,71,34,14.1), 
+                    boltc(18,85,71,42), 
+                    boltc(16,74,56,36.4), 
+                    boltc(18,76,57,36.6), 
+                    boltc(24,67,40,27.1), 
+                    boltc(18,73,53,34.7), 
+                    boltc(18,85,69,42),
+                    boltc(16,77,61,38.3),
+                    boltc(31,45,23,9))
+
+bolt.all <- rbind(bolt.caro, bolt.cincy)
+
+
+slice.prop <- 0.33
+
+ggplot() +
+  geom_segment(data =  slice_max(bolt.all, 
+                                 order_by = kwh.per.hr, 
+                                 prop = slice.prop), 
+               aes(x = soc.start, 
+                   xend = soc.end, 
+                   y = kwh.per.hr, yend = kwh.per.hr))+
+  scale_x_continuous(limits = c(0,1), 
+                     breaks = seq(0,1,by=0.1), 
+                     labels = scales::percent) +
+  scale_y_continuous(limits = c(NA,NA))
+
+
+
+
+ggplot() + 
+  geom_segment(data = bolt.all, 
+               aes(y = soc.start, yend = soc.end, 
+                   x = 0, xend = hrs.chrg, 
+                   color = kwh.per.hr), 
+               linewidth = 1.1) +
+  geom_segment(data = slice_max(bolt.all, 
+                               order_by = kwh.per.hr, 
+                               prop = slice.prop), 
+               aes(y = soc.start, yend = soc.end, 
+                   x = 0, xend = hrs.chrg, 
+                   color = kwh.per.hr), 
+               linewidth = 1.1, color = "cyan") +
+  scale_x_continuous(name = "hours charged", 
+                     breaks = seq(0,10,by=15/60)) +
+  scale_y_continuous(name = "SoC", 
+                     labels = scales::percent, 
+                     breaks = seq(0,1,by= 0.1))+
+  scale_color_viridis_c(option = "C")+
+  coord_flip()
+
+ggplot(data = bolt.all, 
+       aes(x = hrs.chrg, 
+           y = kwh.chrg)) +
+  geom_point(size = 4, 
+             aes(color = soc.end-soc.start)) + 
+  geom_smooth(method = "auto", 
+              se = F)+
+  scale_color_viridis_c(option = "C")+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical")
+
+ggplot(data = bolt.all, 
+       aes(x = soc.end-soc.start, 
+           y = kwh.per.hr)) +
+  geom_point()+
+  geom_smooth(se = F, 
+              method = "auto") 
+
+plot(bolt.all)
+
+ggplot(data = bolt.all, 
+       aes(x = soc.start, 
+           y = soc.end)) + 
+  geom_point(aes(size = kwh.per.hr, 
+                 color = kwh.chrg))+
+  geom_smooth(se = F, 
+              method = "auto")+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical")+
+  scale_color_viridis_c(option = "C")
