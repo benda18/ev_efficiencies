@@ -1451,7 +1451,7 @@ abrp.vc2$model_family <- abrp.vc2$model %>%
   gsub("RWD", " RWD ", .) %>% gsub("AWD", " AWD ", .) %>% gsub("Turbo", " Turbo", .) %>%
   gsub("Turbo S", "TurboS", .) %>%
   gsub("GTS", " GTS ", .) %>% gsub("4S", " 4S ", .) %>% gsub("Turismo4", "Turismo 4 ", .) %>%
-  gsub("\\d{1,3},{0,1}\\.{0,1}\\d{0,2} kwh{0,1}", "", ., ignore.case = T) %>%
+  #gsub("\\d{1,3},{0,1}\\.{0,1}\\d{0,2} kwh{0,1}", "", ., ignore.case = T) %>%
   gsub("4680 battery|NCA battery| LFP", "", .) %>%
   gsub("Fortwo", "ForTwo", .) %>%
   gsub("Forfour", "ForFour", .) %>%
@@ -1462,8 +1462,8 @@ abrp.vc2$model_family <- abrp.vc2$model %>%
   gsub(" 5 {1,}Europe Long ", " 5 Long ", .) %>%
   gsub(" 5 {1,}US Standard ", " 5 Standard ", .) %>%
   gsub(" 5 {1,}Europe {1,}Standard ", " 5 Standard ", .) %>%
-  gsub(" P{0,1}\\d{2,3}D{0,1}| Plaid", "", ., ignore.case = F) %>%
-  gsub("\\(\\d{0,2}\\)", "", .) %>%
+  #gsub(" P{0,1}\\d{2,3}D{0,1}| Plaid", "", ., ignore.case = F) %>%
+ # gsub("\\(\\d{0,2}\\)", "", .) %>%
   gsub("Range Upgrade \\(Raven\\)", "", .) %>% 
   gsub(" Early | Facelift ", " ", .) %>%
   gsub("Aero$|Minus$|Plus$|Plus ", "", .) %>%
@@ -1471,6 +1471,9 @@ abrp.vc2$model_family <- abrp.vc2$model %>%
   trimws() 
 
 for(i in 1:length(abrp.vc2$model_family)){
+  # if(abrp.vc2$make[i] == "Fiat"){
+  #   stop()
+  # }
   abrp.vc2$model_family[i] <- gsub(pattern = abrp.vc2$make[i], 
                                    replacement = "", 
                                    x = abrp.vc2$model_family[i]) %>% 
@@ -1479,39 +1482,77 @@ for(i in 1:length(abrp.vc2$model_family)){
 }
 
 
-abrp.vc2[abrp.vc2$make %in% 
-           sort(unique(abrp.vc2$make))[4], ]$model_family %>%
-  unique() %>% 
-  sort()
-
 # model family cleanup----
 
-abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dual Motor|Single Motor|Single motor|Quad Motor|Tri Motor|Twin Motor|Sedan|Turismo|Turbo|TurboS|GTS| EV |Sport", "", 
-     abrp.vc2$model_family) %>%
-  gsub("Performance|Standard|Large|Pack| Base|GTX| Cross| 4S| 4$| R$| RST| RS |Range| SS| LT| WT", "", .) %>%
-  gsub("Mid|Long| 4 |Electric| Pro| S\\>| \\+|\\+\\>| Pure|Ultra|One|Extreme|Extended GT$|Extended| GTX\\>", "", .) %>%
-  gsub("Low Roof|High Roof|Tourer| LWB$|Max|Recharge| \\d{1,}$|edition|Edition|BST|Electrified|Luxury", "", .) %>%
-  gsub(" N\\>| GT\\>| EV\\d{3,3}\\>|Touring| AMG|Upgrade|Extender|Se|SUV|Maybach|Hatchback|Convertible|Cyberbeast| p\\>", "", .) %>%
-  gsub(" e\\>| Medium Roof|\\+|-|Sapphire|Dream|Grand|Altitude|1st|itude|Summit|P6| ER", "", .) %>%
-  gsub("Blazere|Blazer| Premium", "",.) %>%
-  gsub("Bolt EV", "Bolt", .) %>%
-  gsub(" {1,100}", " ", .) %>% trimws() 
+which.make <- 8
 
-# abrp.vc2$model_family <- gsub(pattern = "e-tron.*$", 
-#                               replacement = "e-tron", x = abrp.vc2$model_family)
-# abrp.vc2$model_family[abrp.vc2$make == "BMW"] <- gsub(pattern = " .*$", 
-#                                                       replacement = "", 
-#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "BMW"])
-# abrp.vc2$model_family[abrp.vc2$make == "BYD"] <- gsub(pattern = " Mini| Long Range| Standard Range| Extended Range| AWD| S1/Yuan Pro", 
-#                                                       replacement = "", 
-#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "BYD"])
-# abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " Mini| Long Range| Standard Range| Extended Range| AWD| S1/Yuan Pro", 
-#                                                       replacement = "", 
-#                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Cadillac"])
+abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
-abrp.vc2 %>%
+abrp.vc2[abrp.vc2$make %in% 
+           sort(unique(abrp.vc2$make))[which.make], ] %>%
   group_by(make, model_family) %>%
   summarise(n = n())
+
+# changes
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "Ocean .*$",
+                                                         replacement = "Ocean",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Fisker"] <- gsub(pattern = "Ocean .*$",
+                                                       replacement = "Ocean",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Fisker"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Fiat"] <- gsub(pattern = "e .*$",
+                                                      replacement = "e",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Fiat"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Blazer.*$", 
+                                                            replacement = "Blazer",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Bolt EUV.*$", 
+                                                            replacement = "Bolt EUV",
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Bolt EV.*$", 
+                                                            replacement = "Bolt EV",
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Equinox.*$", 
+                                                            replacement = "Equinox",
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Silverado.*$", 
+                                                            replacement = "Silverado",
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Spark EV.*$", 
+                                                            replacement = "Spark EV",
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+
+abrp.vc2$model_family <- gsub(pattern = "e-tron.*$",
+                              replacement = "e-tron", x = abrp.vc2$model_family)
+
+abrp.vc2$model_family[abrp.vc2$make == "BMW"] <- gsub(pattern = " .*$",
+                                                      replacement = "",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "BMW"])
+abrp.vc2$model_family[abrp.vc2$make == "BYD"] <- gsub(pattern = " .*$",
+                                                      replacement = "",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "BYD"])
+abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq.*$",
+                                                           replacement = "Lyriq",
+                                                           x = abrp.vc2$model_family[abrp.vc2$make == "Cadillac"])
+
+
+# abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dual Motor|Single Motor|Single motor|Quad Motor|Tri Motor|Twin Motor|Sedan|Turismo|Turbo|TurboS|GTS| EV |Sport", "", 
+#      abrp.vc2$model_family) %>%
+#   gsub("Performance|Standard|Large|Pack| Base|GTX| Cross| 4S| 4$| R$| RST| RS |Range| SS| LT| WT", "", .) %>%
+#   gsub("Mid|Long| 4 |Electric| Pro| S\\>| \\+|\\+\\>| Pure|Ultra|One|Extreme|Extended GT$|Extended| GTX\\>", "", .) %>%
+#   gsub("Low Roof|High Roof|Tourer| LWB$|Max|Recharge| \\d{1,}$|edition|Edition|BST|Electrified|Luxury", "", .) %>%
+#   gsub(" N\\>| GT\\>| EV\\d{3,3}\\>|Touring| AMG|Upgrade|Extender|Se|SUV|Maybach|Hatchback|Convertible|Cyberbeast| p\\>", "", .) %>%
+#   gsub(" Medium Roof|\\+|-|Sapphire|Dream|Grand|Altitude|1st|itude|Summit|P6| ER", "", .) %>%
+#   gsub("Blazere|Blazer| Premium", "",.) %>%
+#   gsub("Bolt EV", "Bolt", .) %>%
+#   gsub(" {1,100}", " ", .) %>% trimws() 
+
+
+
+
 
 
 

@@ -111,3 +111,43 @@ miles.per.month <- 4500
 refcon
 Kw.per.month    <- miles.per.month / refcon
 usd.per.month   <- 0.34 * Kw.per.month
+
+
+# Bolt_energy_plusminus----
+
+bolt_pm <- function(#soc_start.drive  = 77,
+                    #miles.A_drive    = 55,
+                    #hrs.A_drive      = 0 + 51/60,
+                    soc_start.charge = 50,
+                    soc_end.charge   = 78,
+                    hrs_charge       = 0 + 34/60,
+                    KwH_charge       = 17.7){ 
+                    #miles.B_drive    = 101,
+                    #soc_end.drive    = 30,
+                    #hrs.B_drive      = 1 + 28/60){ 
+  # functions
+  require(dplyr)
+  #require(ggplot2)
+  
+  # convert soc to decimal if not already
+  # if(soc_start.drive > 1){
+  #   soc_start.drive <- soc_start.drive / 100
+  # }
+  if(soc_start.charge > 1){
+    soc_start.charge <- soc_start.charge / 100
+  }
+  if(soc_end.charge > 1){
+    soc_end.charge <- soc_end.charge / 100
+  }
+  # if(soc_end.drive > 1){
+  #   soc_end.drive <- soc_end.drive / 100
+  # }
+  # magnitude correct hours
+  #if(hrs.A_drive > 4){ hrs.A_drive <- hrs.A_drive / 60 }
+  if(hrs_charge > 4) { hrs_charge  <- hrs_charge  / 60 }
+  #if(hrs.B_drive > 4){ hrs.B_drive <- hrs.B_drive / 60 }
+  
+  
+}
+
+bolt_pm()
