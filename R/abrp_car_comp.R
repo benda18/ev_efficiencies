@@ -1383,6 +1383,11 @@ na.makes <- c("Cadillac", "Chevrolet", "BMW", "Audi",
               "Volkswagen", "Volvo") %>%
   paste(., sep = "|", collapse = "|")
 
+# remove na.models specifically
+abrp.vc2 <- abrp.vc2[!grepl("Toyota Proace", abrp.vc2$model),]
+abrp.vc2 <- abrp.vc2[!grepl("Volkswagen e-Caddy|Volkswagen e-Crafter|Volkswagen e-Up|Volkswagen e-Transporter", 
+                            abrp.vc2$model),]
+
 abrp.vc2 <- abrp.vc2[grepl(pattern = na.makes, x = abrp.vc2$model),]
 
 # model-year
@@ -1484,7 +1489,7 @@ for(i in 1:length(abrp.vc2$model_family)){
 
 # model family cleanup----
 
-which.make <- 32
+which.make <- 1
 
 abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
@@ -1496,6 +1501,18 @@ abrp.vc2[abrp.vc2$make %in%
 
 # changes
 # changes
+abrp.vc2$model_family[abrp.vc2$make == "Volvo"] <- gsub(pattern = " RWD.*$| Single m.*$| Twin M.*$| P6 .*$| P8 .*$| Recharge.*$",
+                                                             replacement = "", ignore.case = T,
+                                                             x = abrp.vc2$model_family[abrp.vc2$make == "Volvo"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Volkswagen"] <- gsub(pattern = " \\d{2,2} kWh$| LWB$| Tourer.*$| Standard.*$| GTX.*$| Pro.*$| Pure.*$",
+                                                         replacement = "",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Volkswagen"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Toyota"] <- gsub(pattern = " EV$| AWD$| FWD$",
+                                                        replacement = "",
+                                                        x = abrp.vc2$model_family[abrp.vc2$make == "Toyota"])
+
 abrp.vc2$model_family[abrp.vc2$make == "Tesla"] <- gsub(pattern = " P\\d{2,3}| \\d{2,3}| P{0,1}\\d{2,3}D.*$| Plaid$",
                                                         replacement = "",
                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Tesla"])
