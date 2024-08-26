@@ -134,9 +134,9 @@ boltc <- function(soc_start,
   temp.df <- data.frame(soc.start = soc_start, 
                         soc.end   = soc_end, 
                         hrs.chrg  = t_hrs, 
-                        kwh.chrg  = t_kwh) %>%
-    mutate(., 
-           kwh.per.hr =kwh.chrg / hrs.chrg )
+                        kwh.chrg  = t_kwh) #%>%
+  #mutate(., 
+  #      kwh.per.hr = kwh.chrg / hrs.chrg )
   
   return(temp.df)
 }
@@ -162,7 +162,8 @@ bolt.caro <- rbind(boltc(soc_start = 50,
                    boltc(21,60,
                          37/60,24.4), 
                    boltc(33,56,
-                         25/60,14.6))
+                         25/60,14.6)) %>%
+  mutate(., trip_name = "carowinds")
 bolt.cincy <- rbind(boltc(48,71,34,14.1), 
                     boltc(18,85,71,42), 
                     boltc(16,74,56,36.4), 
@@ -171,76 +172,63 @@ bolt.cincy <- rbind(boltc(48,71,34,14.1),
                     boltc(18,73,53,34.7), 
                     boltc(18,85,69,42),
                     boltc(16,77,61,38.3),
-                    boltc(31,45,23,9))
+                    boltc(31,45,23,9)) %>%
+  mutate(., trip_name = "cincinnati")
+bolt.wbeach <- rbind(boltc(18,61,36,26.6), 
+                     boltc(20,79,56,37),
+                     boltc(18,61,36,26.6), 
+                     boltc(20,58,32,24.1), 
+                     boltc(18,52,31,21.4), 
+                     boltc(68,73,9,3.3), 
+                     boltc(20,61,35,25.8), 
+                     boltc(20,47,23,17.2), 
+                     boltc(23,60,32,22.8)) %>%
+  mutate(., 
+         trip_name = "wrightsville beach")
 
-bolt.all <- rbind(bolt.caro, bolt.cincy)
+bolt.all <- rbind(bolt.caro,
+                  bolt.cincy, 
+                  bolt.wbeach)
 
 
 slice.prop <- 0.33
 
-ggplot() +
-  geom_segment(data =  slice_max(bolt.all, 
-                                 order_by = kwh.per.hr, 
-                                 prop = slice.prop), 
-               aes(x = soc.start, 
-                   xend = soc.end, 
-                   y = kwh.per.hr, yend = kwh.per.hr))+
-  scale_x_continuous(limits = c(0,1), 
-                     breaks = seq(0,1,by=0.1), 
-                     labels = scales::percent) +
-  scale_y_continuous(limits = c(NA,NA))
 
 
-
-
-ggplot() + 
-  geom_segment(data = bolt.all, 
-               aes(y = soc.start, yend = soc.end, 
-                   x = 0, xend = hrs.chrg, 
-                   color = kwh.per.hr), 
-               linewidth = 1.1) +
-  geom_segment(data = slice_max(bolt.all, 
-                               order_by = kwh.per.hr, 
-                               prop = slice.prop), 
-               aes(y = soc.start, yend = soc.end, 
-                   x = 0, xend = hrs.chrg, 
-                   color = kwh.per.hr), 
-               linewidth = 1.1, color = "cyan") +
-  scale_x_continuous(name = "hours charged", 
-                     breaks = seq(0,10,by=15/60)) +
-  scale_y_continuous(name = "SoC", 
-                     labels = scales::percent, 
-                     breaks = seq(0,1,by= 0.1))+
-  scale_color_viridis_c(option = "C")+
-  coord_flip()
-
-ggplot(data = bolt.all, 
-       aes(x = hrs.chrg, 
+ggplot(data = bolt.all,
+       aes(x = hrs.chrg,
            y = kwh.chrg)) +
-  geom_point(size = 4, 
-             aes(color = soc.end-soc.start)) + 
-  geom_smooth(method = "auto", 
+  geom_point(size = 4,
+             aes(color = soc.end-soc.start)) +
+  geom_smooth(method = "auto",
               se = F)+
   scale_color_viridis_c(option = "C")+
-  theme(legend.position = "bottom", 
-        legend.direction = "vertical")
+  theme(legend.position = "bottom",
+        legend.direction = "vertical")+
+  coord_cartesian()
 
-ggplot(data = bolt.all, 
-       aes(x = soc.end-soc.start, 
-           y = kwh.per.hr)) +
-  geom_point()+
-  geom_smooth(se = F, 
-              method = "auto") 
+
 
 plot(bolt.all)
 
+cor(bolt.all$soc.start, 
+    bolt.all$hrs.chrg) # -0.56
+cor(bolt.all$soc.end, 
+    bolt.all$hrs.chrg) # +0.77
+cor(bolt.all$soc.end, 
+    bolt.all$kwh.chrg) # +0.66
+cor(bolt.all$hrs.chrg, 
+    bolt.all$kwh.chrg) # +0.96
+
 ggplot(data = bolt.all, 
-       aes(x = soc.start, 
-           y = soc.end)) + 
-  geom_point(aes(size = kwh.per.hr, 
-                 color = kwh.chrg))+
+       aes(y = soc.start, 
+           x = soc.end)) + 
+  geom_point(aes(size = kwh.chrg, 
+                 color = trip_name))+
   geom_smooth(se = F, 
               method = "auto")+
   theme(legend.position = "bottom", 
         legend.direction = "vertical")+
-  scale_color_viridis_c(option = "C")
+  coord_quickmap() +
+  scale_x_continuous(limits = c(0,1)) +
+  scale_y_continuous(limits = c(0,1))

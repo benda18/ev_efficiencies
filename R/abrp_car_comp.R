@@ -1463,7 +1463,7 @@ abrp.vc2$model_family <- abrp.vc2$model %>%
   gsub(" 5 {1,}US Standard ", " 5 Standard ", .) %>%
   gsub(" 5 {1,}Europe {1,}Standard ", " 5 Standard ", .) %>%
   #gsub(" P{0,1}\\d{2,3}D{0,1}| Plaid", "", ., ignore.case = F) %>%
- # gsub("\\(\\d{0,2}\\)", "", .) %>%
+  # gsub("\\(\\d{0,2}\\)", "", .) %>%
   gsub("Range Upgrade \\(Raven\\)", "", .) %>% 
   gsub(" Early | Facelift ", " ", .) %>%
   gsub("Aero$|Minus$|Plus$|Plus ", "", .) %>%
@@ -1484,7 +1484,7 @@ for(i in 1:length(abrp.vc2$model_family)){
 
 # model family cleanup----
 
-which.make <- 8
+which.make <- 18
 
 abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
@@ -1494,21 +1494,58 @@ abrp.vc2[abrp.vc2$make %in%
   summarise(n = n())
 
 # changes
-abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "Ocean .*$",
-                                                         replacement = "Ocean",
-                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+abrp.vc2$model_family[abrp.vc2$make == "Lexus"] <- gsub(pattern = " \\d{3,3}e$",
+                                                      replacement = "",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Lexus"])
+abrp.vc2$model_family[abrp.vc2$make == "Kia"] <- gsub(pattern = " GT$| Long R.*$| Standard R.*$| EV .*$| \\d{2,2} kWh$",
+                                                       replacement = "",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Kia"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Jeep"] <- gsub(pattern = "Avenger.*$",
+                                                         replacement = "Avenger",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Jeep"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Jaguar"] <- gsub(pattern = "I-Pace.*$",
+                                                         replacement = "I-Pace",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Jaguar"])
+abrp.vc2$model_family[abrp.vc2$make == "Hyundai"] <- gsub(pattern = " N$| Long R.*$| Standard R.*$| Electric.*$| \\d{2,2} kWh.*$",
+                                                          replacement = "",
+                                                          x = abrp.vc2$model_family[abrp.vc2$make == "Hyundai"])
+
+abrp.vc2$model_family[abrp.vc2$make == "GMC"] <- gsub(pattern = "Hummer .*$",
+                                                      replacement = "Hummer",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "GMC"])
+abrp.vc2$model_family[abrp.vc2$make == "Genesis"] <- gsub(pattern = "0 .*$",
+                                                          replacement = "0",
+                                                          x = abrp.vc2$model_family[abrp.vc2$make == "Genesis"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "Focus .*$",
+                                                       replacement = "Focus",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "^.*Transit Connect.*$",
+                                                       replacement = "Transit Connect",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "E-Transit .*$",
+                                                       replacement = "E-Transit",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "Mustang Mach-E .*$",
+                                                       replacement = "Mustang Mach-E",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
+abrp.vc2$model_family[abrp.vc2$make == "Ford"] <- gsub(pattern = "F-150 Lightning .*$",
+                                                       replacement = "F-150 Lightning",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Ford"])
 
 abrp.vc2$model_family[abrp.vc2$make == "Fisker"] <- gsub(pattern = "Ocean .*$",
-                                                       replacement = "Ocean",
-                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Fisker"])
+                                                         replacement = "Ocean",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Fisker"])
 
 abrp.vc2$model_family[abrp.vc2$make == "Fiat"] <- gsub(pattern = "e .*$",
-                                                      replacement = "e",
-                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Fiat"])
+                                                       replacement = "e",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Fiat"])
 
 abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Blazer.*$", 
                                                             replacement = "Blazer",
-                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
+                                                            x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
 abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"] <- gsub(pattern     = "Bolt EUV.*$", 
                                                             replacement = "Bolt EUV",
                                                             x = abrp.vc2$model_family[abrp.vc2$make == "Chevrolet"])
@@ -1559,8 +1596,8 @@ abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq
 # explore----
 
 
-  abrp.vc2[abrp.vc2$make %in% "Chevrolet" & 
-             abrp.vc2$model_family %in% "Bolt",]$model
+abrp.vc2[abrp.vc2$make %in% "Chevrolet" & 
+           abrp.vc2$model_family %in% "Bolt",]$model
 
 colnames(abrp.vc2)
 
