@@ -1484,16 +1484,75 @@ for(i in 1:length(abrp.vc2$model_family)){
 
 # model family cleanup----
 
-which.make <- 18
+which.make <- 32
 
 abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
 abrp.vc2[abrp.vc2$make %in% 
            sort(unique(abrp.vc2$make))[which.make], ] %>%
   group_by(make, model_family) %>%
-  summarise(n = n())
+  summarise(n = n()) #%>%
+  #.[grepl("Model S", .$model_family),]
 
 # changes
+# changes
+abrp.vc2$model_family[abrp.vc2$make == "Tesla"] <- gsub(pattern = " P\\d{2,3}| \\d{2,3}| P{0,1}\\d{2,3}D.*$| Plaid$",
+                                                        replacement = "",
+                                                        x = abrp.vc2$model_family[abrp.vc2$make == "Tesla"])
+abrp.vc2$model_family[abrp.vc2$make == "Tesla"] <- gsub(pattern = " \\(\\d{2,3} kWh\\).*$| RWD.*$| AWD.*$| \\(\\d{2,3}\\).*$| Standard .*$| Performance.*$| Mid R.*$| Cyberbeast.*$| Long Range.*$",
+                                                         replacement = "",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Tesla"])
+abrp.vc2$model_family[abrp.vc2$make == "Subaru"] <- gsub(pattern = " AWD.*$",
+                                                         replacement = "",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Subaru"])
+abrp.vc2$model_family[abrp.vc2$make == "Rivian"] <- gsub(pattern = " Dual M.*$| Quad M.*$| Single M.*$| Tri M.*$",
+                                                          replacement = "",
+                                                          x = abrp.vc2$model_family[abrp.vc2$make == "Rivian"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Porsche"] <- gsub(pattern = " Turbo.*$| 4 .*$| Cross Turismo.*$| Sedan.*$| Sport Turismo.*$",
+                                                           replacement = "",
+                                                           x = abrp.vc2$model_family[abrp.vc2$make == "Porsche"])
+abrp.vc2$model_family[abrp.vc2$make == "Polestar"] <- gsub(pattern = " BST .*$| Long R.*$| Standard R.*$",
+                                                         replacement = "",
+                                                         x = abrp.vc2$model_family[abrp.vc2$make == "Polestar"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Nissan"] <- gsub(pattern = " \\d{2,3} kWh$| e\\+.*$",
+                                                      replacement = "",
+                                                      x = abrp.vc2$model_family[abrp.vc2$make == "Nissan"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Nio"] <- gsub(pattern = " Touring.*$| \\d{2,3} kWh$",
+                                                       replacement = "",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Nio"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Mitsubishi"] <- gsub(pattern = " eCanter.*$| \\(\\d{2,3} kWh\\)$",
+                                                     replacement = "",
+                                                     x = abrp.vc2$model_family[abrp.vc2$make == "Mitsubishi"])
+abrp.vc2$model_family[abrp.vc2$make == "Mini"] <- gsub(pattern = " Se.*$",
+                                                       replacement = "",
+                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Mini"])
+
+
+abrp.vc2$model_family[abrp.vc2$make == "MG"] <- gsub(pattern = " XPOWER| Extended R.*$| Long R.*$| Standard R.*$| EV.*$| R Per.*$| R Sta.*$",
+                                                                replacement = "",
+                                                                x = abrp.vc2$model_family[abrp.vc2$make == "MG"])
+abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"] <- gsub(pattern = " AMG.*$| SUV.*$",
+                                                                replacement = "",
+                                                                x = abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"] <- gsub(pattern = " \\d{3,3}E{0,1}\\+{0,1}",
+                                                                replacement = "",
+                                                                x = abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"] <- gsub(pattern = " 4MATIC\\+{0,1}$| \\d{2,3} kWh$| Tourer.*$",
+                                                        replacement = "",
+                                                        x = abrp.vc2$model_family[abrp.vc2$make == "Mercedes-Benz"])
+
+abrp.vc2$model_family[abrp.vc2$make == "Lucid"] <- gsub(pattern = " Dream.*$| Grand.*$| Pure.*$| Sapphire.*$| Touring.*$",
+                                                        replacement = "",
+                                                        x = abrp.vc2$model_family[abrp.vc2$make == "Lucid"])
+abrp.vc2$model_family[abrp.vc2$make == "Lotus"] <- gsub(pattern = "Eletre.*",
+                                                        replacement = "Eletre",
+                                                        x = abrp.vc2$model_family[abrp.vc2$make == "Lotus"])
 abrp.vc2$model_family[abrp.vc2$make == "Lexus"] <- gsub(pattern = " \\d{3,3}e$",
                                                       replacement = "",
                                                       x = abrp.vc2$model_family[abrp.vc2$make == "Lexus"])
