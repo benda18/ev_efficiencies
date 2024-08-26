@@ -3,6 +3,7 @@ library(ggplot2)
 library(renv)
 library(readr)
 library(janitor)
+library(data.table)
 
 renv::status()
 renv::snapshot()
@@ -1489,7 +1490,7 @@ for(i in 1:length(abrp.vc2$model_family)){
 
 # model family cleanup----
 
-which.make <- 1
+which.make <- 1:99
 
 abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
@@ -1663,7 +1664,9 @@ abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq
 #   gsub("Bolt EV", "Bolt", .) %>%
 #   gsub(" {1,100}", " ", .) %>% trimws() 
 
+# years----
 
+??dcast
 
 
 
