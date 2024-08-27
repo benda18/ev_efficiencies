@@ -8,6 +8,7 @@ library(data.table)
 renv::status()
 renv::snapshot()
 
+#rm(list=ls())
 rm(list= ls()[!ls() %in% "abrp.vc2"]);cat('\f')
 
 if(!exists("abrp.vc2")){ 
@@ -1377,7 +1378,7 @@ na.makes <- c("Cadillac", "Chevrolet", "BMW", "Audi",
               "Fiat", "Fisker", "Ford", "Genesis", "GMC", 
               "Harley-Davidson", "Honda", "Hyundai", "Jaguar", 
               "Jeep", "Kia", "Lexus", 
-              "Lightyear", "MG", "Nio", "BYD", # maybe/???
+              #"Lightyear", "MG", "Nio", "BYD", # maybe/???
               "Lotus", "Lucid", "Mazda", "Mercedes-Benz", "Mini", 
               "Mitsubishi", "Nissan", "Polestar", "Porsche", 
               "Rivian", "Subaru", "Tesla", "Toyota", "Vinfast", 
@@ -1396,6 +1397,8 @@ abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = a
 abrp.vc2$model <- gsub(pattern = " 2020-21 ", replacement = " 2020-2021 ", x = abrp.vc2$model)
 abrp.vc2$model <- gsub(pattern = " 2018-19 ", replacement = " 2018-2019 ", x = abrp.vc2$model)
 abrp.vc2$model <- gsub(pattern = " 2015-19 ", replacement = " 2015-2019 ", x = abrp.vc2$model)
+abrp.vc2$model <- gsub(pattern = "\\(2021-\\)", replacement = "2021+ ", x = abrp.vc2$model)
+abrp.vc2$model <- gsub(pattern = " 2020- ",   replacement = " 2020+ ", x = abrp.vc2$model)
 
 temp <- abrp.vc2$model  %>%
   lapply(., gsub, pattern = "2012\\+\\(14.5", 
@@ -1412,6 +1415,17 @@ for(i in 1:length(temp)){
   temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, 
                                             abort = function() {})))
 }
+
+unlist(temp) %>% 
+  unique() %>%
+  sort() %>%
+  strsplit(., "-") %>%
+  unlist() %>% unique() %>% gsub("\\+", "", .) %>%
+  as.numeric() %>% range
+
+grep("\\d{4,4}\\- ", abrp.vc2$model,value = T) %>%
+  unique() %>%
+  sort()
 
 abrp.vc2$with_model.year <- unlist(temp2)
 abrp.vc2$model_year      <- NA
