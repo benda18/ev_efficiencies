@@ -1392,7 +1392,7 @@ abrp.vc2 <- abrp.vc2[!grepl("Volkswagen e-Caddy|Volkswagen e-Crafter|Volkswagen 
 
 abrp.vc2 <- abrp.vc2[grepl(pattern = na.makes, x = abrp.vc2$model),]
 
-# model-year
+# model-year----
 abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = abrp.vc2$model)
 abrp.vc2$model <- gsub(pattern = " 2020-21 ", replacement = " 2020-2021 ", x = abrp.vc2$model)
 abrp.vc2$model <- gsub(pattern = " 2018-19 ", replacement = " 2018-2019 ", x = abrp.vc2$model)
@@ -1423,10 +1423,6 @@ unlist(temp) %>%
   unlist() %>% unique() %>% gsub("\\+", "", .) %>%
   as.numeric() %>% range
 
-grep("\\d{4,4}\\- ", abrp.vc2$model,value = T) %>%
-  unique() %>%
-  sort()
-
 abrp.vc2$with_model.year <- unlist(temp2)
 abrp.vc2$model_year      <- NA
 
@@ -1437,10 +1433,14 @@ for(i in 1:length(temp2)){
   }
 }
 
+abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)] <- paste(abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)], 
+      "2025", sep = "") %>%
+  gsub("\\+", "-", .)
+
 abrp.vc2[!is.na(abrp.vc2$model_year),"model_year"]$model_year %>%
   table()
 
-# model family
+# model family----
 # general tidy
 abrp.vc2$model <- gsub("Tesla Model S {0}",  "Tesla Model S ", abrp.vc2$model)
 abrp.vc2$model <- gsub("^Tesla Model 3 {0}",  "Tesla Model 3 ", abrp.vc2$model)
@@ -1682,15 +1682,44 @@ abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq
 
 abrp.vc2.my <- abrp.vc2[,c("make", "model_family", "model_year")] %>%
   group_by(make, model_family, model_year) %>%
+  summarise() %>%
+  .[!is.na(.$model_year),]
+
+df_cw.out <- NULL
+for(i.make in unique(abrp.vc2.my$make)){
+  for(i.model in unique(abrp.vc2.my[abrp.vc2.my$make == i.make,]$model_family)){
+    temp.years <- abrp.vc2.my[abrp.vc2.my$make == i.make & 
+                                abrp.vc2.my$model_family == i.model,]$model_year %>%
+      unique()
+    
+    temp.years.list <- strsplit(temp.years, "-")
+    temp.yrs.out <- NULL
+    for(i in 1:length(temp.years.list)){
+     temp.yrs.out <- c(temp.yrs.out, 
+                       seq(min(as.numeric(temp.years.list[[i]])), 
+          max(as.numeric(temp.years.list[[i]])), 
+          by = 1)) %>% 
+       unique() %>% sort()
+    }
+      
+    df_cw.out <- rbind(df_cw.out, 
+                       data.frame(make = i.make, 
+                                  model_family = i.model, 
+                                  my = temp.yrs.out))
+  }
+}
+
+
+
+
+abrp.vc2.my[!is.na(abrp.vc2.my$model_year),]
+
+abrp.vc2 %>% 
+  .[.$make %in% "Chevrolet"  ,] %>%
+  group_by(make, model_family, model_year, model) %>%
   summarise(n = n())
 
-
-
-
-
 # explore----
-
-
 abrp.vc2[abrp.vc2$make %in% "Chevrolet" & 
            abrp.vc2$model_family %in% "Bolt",]$model
 
