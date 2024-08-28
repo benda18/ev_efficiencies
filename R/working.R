@@ -363,3 +363,4 @@ ggplot(data = spd_time,
   geom_point(aes(color = factor(max.soc)), 
              size = 4)+
   geom_smooth(method = "lm")
+
