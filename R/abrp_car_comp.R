@@ -1709,12 +1709,18 @@ for(i.make in unique(abrp.vc2.my$make)){
   }
 }
 
+cw_mfmy <- df_cw.out %>% as_tibble()
+rm(df_cw.out)
 
 
 
-abrp.vc2.my[!is.na(abrp.vc2.my$model_year),]
+abrp.vc2.my[!is.na(abrp.vc2.my$model_year),] %>% 
+  left_join(., cw_mfmy, 
+            by = c("make", "model_family"))
 
 abrp.vc2 %>% 
+  left_join(., cw_mfmy, 
+            by = c("make", "model_family"))
   .[.$make %in% "Chevrolet"  ,] %>%
   group_by(make, model_family, model_year, model) %>%
   summarise(n = n())

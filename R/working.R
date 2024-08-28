@@ -12,7 +12,7 @@ carowinds.ice.rthrs <- 4+46/60
 
 
 cars <- c("tesla model 3", "chevy bolt", "hyundai kona", 
-          "volkswagen id.4")
+          "volkswagen id.4", "ford mustang mach-e")
 
 locs <- c("Durham", "Charlottesville", "Carowinds", 
           "Hildredth Ave, Cincinnati", "Asheville", "Chicago", 
@@ -50,7 +50,8 @@ ods$route_id <- paste("r", 1:nrow(ods),
 # make cw_cars----
 cw_cars <- expand.grid(route_id = ods$route_id, 
                        car = cars, 
-                       stringsAsFactors = F)
+                       stringsAsFactors = F) %>%
+  as_tibble()
 
 # update ods with cars
 
@@ -67,6 +68,13 @@ odscars$end_pct   <- .2
 odscars$max_battpct <- .8
 
 # carowinds
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$t_hrs <- 5+28/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$chrg_hrs <- 0+44/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Carowinds",]$t_miles <- 313
+
 odscars[grepl("chevy", odscars$car) & 
           odscars$Var2 == "Carowinds",]$t_hrs <- 6+39/60
 odscars[grepl("chevy", odscars$car) & 
@@ -97,6 +105,14 @@ odscars[grepl("volkswagen", odscars$car) &
 
 
 # charlottesville
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$t_hrs <- 7+26/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$chrg_hrs <- 1+6/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Charlottesville",]$t_miles <- 400
+
+
 odscars[grepl("chevy", odscars$car) & 
           odscars$Var2 == "Charlottesville",]$t_hrs <- 8+46/60
 odscars[grepl("chevy", odscars$car) & 
@@ -126,6 +142,13 @@ odscars[grepl("volkswagen", odscars$car) &
           odscars$Var2 == "Charlottesville",]$t_miles <- 379
 
 # asheville
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_hrs <- 7+49/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Asheville",]$chrg_hrs <- 1+9/60
+odscars[grepl("ford", odscars$car) & 
+          odscars$Var2 == "Asheville",]$t_miles <- 448
+
 odscars[grepl("chevy", odscars$car) & 
           odscars$Var2 == "Asheville",]$t_hrs <- 9+43/60
 odscars[grepl("chevy", odscars$car) & 
