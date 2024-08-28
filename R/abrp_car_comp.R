@@ -8,8 +8,8 @@ library(data.table)
 renv::status()
 renv::snapshot()
 
-#rm(list=ls())
-rm(list= ls()[!ls() %in% "abrp.vc2"]);cat('\f')
+rm(list=ls());cat('\f')
+#rm(list= ls()[!ls() %in% "abrp.vc2"]);cat('\f')
 
 if(!exists("abrp.vc2")){ 
   abrp.vc2 <- read_tsv("Lucid Air Dream Edition (alpha)	486	00:16	03:28	2	09:09	

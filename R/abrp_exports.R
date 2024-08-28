@@ -124,3 +124,4 @@ ggplot() +
              aes(x = distance, y = drive_duration))
 
 plot(b.trip[,c(2,3,4,6,7,8,11,12)])
+
