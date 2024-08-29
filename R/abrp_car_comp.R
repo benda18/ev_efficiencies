@@ -1350,7 +1350,29 @@ Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30
                                      "ideal_charge_time", "ideal_drive_time", 
                                      "stops", "total_trip_time", "trip_ratio"))
   
+  # fix times formatting
+  temp <- abrp.vc2$ideal_charge_time %>% 
+    as.character() %>% 
+    substr(., 1,5)
+  temp.hrs  <- gsub(pattern = ":.*$", "", temp) %>% as.numeric()
+  temp.mins <- as.numeric(gsub(pattern = "^.*:", "", temp))/60
+  abrp.vc2$ideal_charge_time <- temp.hrs + temp.mins
   
+  temp <- abrp.vc2$ideal_drive_time %>% 
+    as.character() %>% 
+    substr(., 1,5)
+  temp.hrs  <- gsub(pattern = ":.*$", "", temp) %>% as.numeric()
+  temp.mins <- as.numeric(gsub(pattern = "^.*:", "", temp))/60
+  abrp.vc2$ideal_drive_time <- temp.hrs + temp.mins
+  
+  temp <- abrp.vc2$total_trip_time %>% 
+    as.character() %>% 
+    substr(., 1,5)
+  temp.hrs  <- gsub(pattern = ":.*$", "", temp) %>% as.numeric()
+  temp.mins <- as.numeric(gsub(pattern = "^.*:", "", temp))/60
+  abrp.vc2$total_trip_time <- temp.hrs + temp.mins
+  
+  rm(temp, temp.hrs, temp.mins)
   
   abrp.vc2 <- abrp.vc2[(1:nrow(abrp.vc2))[1:nrow(abrp.vc2) %%2 == 1],]
   
@@ -1358,9 +1380,7 @@ Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30
                      trip_miles = 600, 
                      avg_mph_moving = 70, 
                      min_leg_miles = 90, 
-                     trip_ratio = as.numeric(abrp.vc2$ideal_drive_time*60)/
-                       (as.numeric(abrp.vc2$ideal_drive_time*60) +
-                          as.numeric(abrp.vc2$ideal_charge_time)), 
+                     trip_ratio = abrp.vc2$ideal_drive_time / abrp.vc2$ideal_charge_time,
                      avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
   
 }
@@ -1751,25 +1771,52 @@ abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
 #   group_by(make, model_family, model_year, model) %>%
 #   summarise(n = n())
 
+# remove tesla roadster
+abrp.vc3 <- abrp.vc3[!abrp.vc3$model_family == "Roadster",]
+
+abrp.vc3 <- abrp.vc3[!abrp.vc3$myears >= 2023,]
+
+
 # explore----
 
+some.makes <- c("Ford", "Chevrolet", "Hyundai")
+
 abrp.vc3 %>%
-  group_by(model,make, model_family, range_at_65) %>%
+  .[.$make %in% some.makes,] %>%
+  group_by(myears, 
+           model_family,
+           make) %>%
+  summarise(n = n(), 
+            n.mf = n_distinct(model_family), 
+            min_range = min(range_at_65mph),
+            avg_range = mean(range_at_65mph),
+            max_range = max(range_at_65mph)) %>%
+  ggplot(data = ., 
+         aes(x = myears, 
+             y = avg_range)) + 
+  geom_line(aes(color = make)) +
+  scale_x_continuous(breaks = seq(0,3000,by=1))+
+  theme(legend.position = "right", 
+        legend.direction = "vertical", 
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+
+abrp.vc3 %>%
+  group_by(model,make, model_family, range_at_65mph) %>%
   summarise(n = n(),
             n_my = n_distinct(model_year), 
             avg.range_at_65 = mean(range_at_65mph), 
             sd.range_at_65  = sd(range_at_65mph), 
             avg.ideal_chrg_hrs = mean(as.numeric(ideal_charge_time)/60/60), 
             avg.ideal_drive_hrs = mean(as.numeric(ideal_drive_time)/60/60), 
-            impupted.charge_to_drive_hrs = avg.ideal_chrg_hrs / avg.ideal_drive_hrs) %>%
+            impupted.charge_to_total_hrs = avg.ideal_chrg_hrs / avg.ideal_drive_hrs) %>%
   ungroup() %>%
   slice_min(.,
-            order_by = impupted.charge_to_drive_hrs,
+            order_by = impupted.charge_to_total_hrs,
             prop = 0.9) %>%
   ggplot(data = ., 
-         aes(x = factor(make), 
-              
-             y = impupted.charge_to_drive_hrs)) + 
+         aes(x = factor(make),
+             y = impupted.charge_to_total_hrs)) + 
   geom_boxplot() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
 
@@ -1790,21 +1837,27 @@ ggplot(data = abrp.vc3[((as.numeric(abrp.vc3$ideal_charge_time)/60/60)/
                 name = "Range (miles) at 65mph")
 
 
-abrp.vc2[grepl("fiat", abrp.vc2$make, ignore.case = T),]$model
+# abrp.vc3[grepl("fiat", abrp.vc3$make, ignore.case = T),]$model
+# 
+# colnames(abrp.vc3)
+# 
+# abrp.vc2[grepl("Bolt", abrp.vc2$model),] %>%
+#   group_by(make, model_family,
+#            ideal_charge_time, ideal_drive_time, 
+#            trip_ratio) %>%
+#   summarise(n = n())
 
-colnames(abrp.vc2)
 
-abrp.vc2[grepl("Bolt", abrp.vc2$model),] %>%
-  group_by(make, model_family,
-           ideal_charge_time, ideal_drive_time, 
-           trip_ratio) %>%
-  summarise(n = n())
+abrp.vc3[abrp.vc3$make == "Chevrolet",] %>%
+  group_by(model_family, 
+           ct = ideal_charge_time, 
+           dt = ideal_drive_time, 
+           tr = trip_ratio) %>%
+  summarise(ctdt = as.numeric(ct) / as.numeric(dt))
 
-
-
-hist(as.numeric(abrp.vc2$ideal_drive_time*60)/
-       (as.numeric(abrp.vc2$ideal_drive_time*60) +
-          as.numeric(abrp.vc2$ideal_charge_time)))
+hist(as.numeric(abrp.vc3$ideal_drive_time*60)/
+       (as.numeric(abrp.vc3$ideal_drive_time*60) +
+          as.numeric(abrp.vc3$ideal_charge_time)))
 
 ggplot(data = abrp.vc2, 
        aes(y = ideal_charge_time, 
