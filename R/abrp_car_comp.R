@@ -1686,48 +1686,111 @@ abrp.vc2.my <- abrp.vc2[,c("make", "model_family", "model_year")] %>%
   .[!is.na(.$model_year),]
 
 df_cw.out <- NULL
-for(i.make in unique(abrp.vc2.my$make)){
-  for(i.model in unique(abrp.vc2.my[abrp.vc2.my$make == i.make,]$model_family)){
-    temp.years <- abrp.vc2.my[abrp.vc2.my$make == i.make & 
-                                abrp.vc2.my$model_family == i.model,]$model_year %>%
-      unique()
-    
-    temp.years.list <- strsplit(temp.years, "-")
-    temp.yrs.out <- NULL
-    for(i in 1:length(temp.years.list)){
-     temp.yrs.out <- c(temp.yrs.out, 
-                       seq(min(as.numeric(temp.years.list[[i]])), 
-          max(as.numeric(temp.years.list[[i]])), 
-          by = 1)) %>% 
-       unique() %>% sort()
-    }
-      
-    df_cw.out <- rbind(df_cw.out, 
-                       data.frame(make = i.make, 
-                                  model_family = i.model, 
-                                  my = temp.yrs.out))
-  }
+for(i in 1:nrow(abrp.vc2.my)){
+  temp.yr.range <- # "2018-2021" %>%
+    abrp.vc2.my$model_year[i] %>%
+   strsplit(x = ., 
+            split = "-|\\+") %>%
+    unlist() %>%
+    as.numeric()
+  
+  
+  
+  df_cw.out <- rbind(df_cw.out, 
+                     data.frame(make         = abrp.vc2.my$make[i], 
+                                model_family = abrp.vc2.my$model_family[i], 
+                                model_year   = abrp.vc2.my$model_year[i],
+                                myears   = seq(min(temp.yr.range),max(temp.yr.range), by = 1)))
 }
+df_cw.out
+
+# df_cw.out <- NULL
+# for(i.make in unique(abrp.vc2.my$make)){
+#   for(i.model in unique(abrp.vc2.my[abrp.vc2.my$make == i.make,]$model_family)){
+#     temp.years <- abrp.vc2.my[abrp.vc2.my$make == i.make & 
+#                                 abrp.vc2.my$model_family == i.model,]$model_year %>%
+#       unique()
+#     
+#     temp.years.list <- strsplit(temp.years, "-")
+#     temp.yrs.out <- NULL
+#     for(i in 1:length(temp.years.list)){
+#      temp.yrs.out <- c(temp.yrs.out, 
+#                        seq(min(as.numeric(temp.years.list[[i]])), 
+#           max(as.numeric(temp.years.list[[i]])), 
+#           by = 1)) %>% 
+#        unique() %>% sort()
+#     }
+#       
+#     df_cw.out <- rbind(df_cw.out, 
+#                        data.frame(make = i.make, 
+#                                   model_family = i.model, 
+#                                   my = temp.yrs.out))
+#   }
+# }
 
 cw_mfmy <- df_cw.out %>% as_tibble()
 rm(df_cw.out)
 
 
 
-abrp.vc2.my[!is.na(abrp.vc2.my$model_year),] %>% 
+abrp.vc2.my <- abrp.vc2.my[!is.na(abrp.vc2.my$model_year),] %>% 
   left_join(., cw_mfmy, 
-            by = c("make", "model_family"))
+            by = c("make", "model_family", "model_year"))
 
-abrp.vc2 %>% 
-  left_join(., cw_mfmy, 
-            by = c("make", "model_family"))
-  .[.$make %in% "Chevrolet"  ,] %>%
-  group_by(make, model_family, model_year, model) %>%
-  summarise(n = n())
+abrp.vc3 <- left_join(abrp.vc2, 
+                      abrp.vc2.my, 
+                      by = c("make", "model_family", "model_year"), 
+                      na_matches = "never") 
+
+abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
+
+# abrp.vc2 %>% 
+#   left_join(., cw_mfmy, 
+#             by = c("make", "model_family"))
+#   .[.$make %in% "Chevrolet"  ,] %>%
+#   group_by(make, model_family, model_year, model) %>%
+#   summarise(n = n())
 
 # explore----
-abrp.vc2[abrp.vc2$make %in% "Chevrolet" & 
-           abrp.vc2$model_family %in% "Bolt",]$model
+
+abrp.vc3 %>%
+  group_by(model,make, model_family, range_at_65) %>%
+  summarise(n = n(),
+            n_my = n_distinct(model_year), 
+            avg.range_at_65 = mean(range_at_65mph), 
+            sd.range_at_65  = sd(range_at_65mph), 
+            avg.ideal_chrg_hrs = mean(as.numeric(ideal_charge_time)/60/60), 
+            avg.ideal_drive_hrs = mean(as.numeric(ideal_drive_time)/60/60), 
+            impupted.charge_to_drive_hrs = avg.ideal_chrg_hrs / avg.ideal_drive_hrs) %>%
+  ungroup() %>%
+  slice_min(.,
+            order_by = impupted.charge_to_drive_hrs,
+            prop = 0.9) %>%
+  ggplot(data = ., 
+         aes(x = factor(make), 
+              
+             y = impupted.charge_to_drive_hrs)) + 
+  geom_boxplot() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
+
+ggplot(data = abrp.vc3[((as.numeric(abrp.vc3$ideal_charge_time)/60/60)/
+                         (as.numeric(abrp.vc3$ideal_drive_time)/60/60)) <= 1,], 
+       aes(x = range_at_65mph, 
+           y = (as.numeric(ideal_charge_time)/60/60)/
+             (as.numeric(ideal_drive_time)/60/60))) + 
+  geom_point()+
+  geom_smooth(method = "loess", se = F)+
+  scale_y_log10(breaks = c(seq(0.1, 1, by = 0.1), 
+                           seq(0.1, 1, by = 0.1)*10, 
+                           seq(0.1, 1, by = 0.1)*100), 
+                name = "Ideal Charge Time to Ideal Drive Time") +
+  scale_x_log10(breaks = c(seq(0.1, 1, by = 0.1)*1000, 
+                           seq(0.1, 1, by = 0.1)*10, 
+                           seq(0.1, 1, by = 0.1)*100), 
+                name = "Range (miles) at 65mph")
+
+
+abrp.vc2[grepl("fiat", abrp.vc2$make, ignore.case = T),]$model
 
 colnames(abrp.vc2)
 
