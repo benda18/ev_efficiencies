@@ -1380,12 +1380,19 @@ Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30
                      trip_miles = 600, 
                      avg_mph_moving = 70, 
                      min_leg_miles = 90, 
-                     trip_ratio = abrp.vc2$ideal_drive_time / abrp.vc2$ideal_charge_time,
-                     avg_trip_mph = trip_miles / (as.numeric(total_trip_time)) * 60*60)
+                     trip_ratio = abrp.vc2$ideal_charge_time / abrp.vc2$ideal_drive_time,
+                     avg_trip_mph = trip_miles / total_trip_time) %>%
+    mutate(., 
+           pct_of_70mph = avg_trip_mph/avg_mph_moving)
   
 }
 
 # data cleanup----
+abrp.vc2$trip_ratio %>% fivenum()
+abrp.vc2$avg_trip_mph %>% fivenum()
+
+hist(abrp.vc2$avg_trip_mph)
+hist(abrp.vc2$pct_of_70mph)
 
 
 # make
@@ -1524,14 +1531,14 @@ for(i in 1:length(abrp.vc2$model_family)){
 
 # model family cleanup----
 
-which.make <- 1:99
+# which.make <- 1:99
+# 
+# abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
 
-abrp.vc2[abrp.vc2$make %in% sort(unique(abrp.vc2$make))[which.make], ]$model %>% unique() %>% sort()
-
-abrp.vc2[abrp.vc2$make %in% 
-           sort(unique(abrp.vc2$make))[which.make], ] %>%
-  group_by(make, model_family) %>%
-  summarise(n = n()) #%>%
+# abrp.vc2[abrp.vc2$make %in% 
+#            sort(unique(abrp.vc2$make))[which.make], ] %>%
+#   group_by(make, model_family) %>%
+#   summarise(n = n()) #%>%
   #.[grepl("Model S", .$model_family),]
 
 # changes
@@ -1722,7 +1729,7 @@ for(i in 1:nrow(abrp.vc2.my)){
                                 model_year   = abrp.vc2.my$model_year[i],
                                 myears   = seq(min(temp.yr.range),max(temp.yr.range), by = 1)))
 }
-df_cw.out
+df_cw.out <- df_cw.out %>% as_tibble()
 
 # df_cw.out <- NULL
 # for(i.make in unique(abrp.vc2.my$make)){
@@ -1751,8 +1758,6 @@ df_cw.out
 cw_mfmy <- df_cw.out %>% as_tibble()
 rm(df_cw.out)
 
-
-
 abrp.vc2.my <- abrp.vc2.my[!is.na(abrp.vc2.my$model_year),] %>% 
   left_join(., cw_mfmy, 
             by = c("make", "model_family", "model_year"))
@@ -1774,7 +1779,7 @@ abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
 # remove tesla roadster
 abrp.vc3 <- abrp.vc3[!abrp.vc3$model_family == "Roadster",]
 
-abrp.vc3 <- abrp.vc3[!abrp.vc3$myears >= 2023,]
+#abrp.vc3 <- abrp.vc3[!abrp.vc3$myears >= 2023,]
 
 
 # explore----
@@ -1801,14 +1806,95 @@ abrp.vc3 %>%
         axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))
 
 
+
 abrp.vc3 %>%
-  group_by(model,make, model_family, range_at_65mph) %>%
+  group_by(make, model_family, model_year, myears) %>%
+  summarise(n = n(),
+            #n_my = n_distinct(model_year), 
+            avg.range_at_65 = mean(range_at_65mph), 
+            sd.range_at_65  = sd(range_at_65mph), 
+            avg.ideal_chrg_hrs = mean(ideal_charge_time), 
+            avg.trip_ratio = mean(trip_ratio))
+
+tesla.only <- abrp.vc3 %>%
+  .[.$make %in% "Tesla",] %>%
+  group_by(make, model_family, myears) %>%
+  summarise(n = n(), 
+            avg.trip_ratio     = mean(trip_ratio), 
+            avg.range_at_65mph = mean(range_at_65mph), 
+            min.trip_ratio     = min(trip_ratio), 
+            max.trip_ratio     = max(trip_ratio)) %>%
+  group_by(myears) %>%
+  summarise(n = n(),
+            n_makes = n_distinct(make), 
+            n_model_families = n_distinct(model_family),
+            avg.trip_ratio     = mean(avg.trip_ratio), 
+            avg.range_at_65mph = mean(avg.range_at_65mph), 
+            min.trip_ratio     = min(min.trip_ratio), 
+            max.trip_ratio     = max(max.trip_ratio))
+
+all.only <- abrp.vc3 %>%
+  group_by(make, model_family, myears) %>%
+  summarise(n = n(), 
+            avg.trip_ratio     = mean(trip_ratio), 
+            avg.range_at_65mph = mean(range_at_65mph), 
+            min.trip_ratio     = min(trip_ratio), 
+            max.trip_ratio     = max(trip_ratio)) %>%
+  group_by(myears) %>%
+  summarise(n = n(),
+            n_makes = n_distinct(make), 
+            n_model_families = n_distinct(model_family),
+            avg.trip_ratio     = mean(avg.trip_ratio), 
+            avg.range_at_65mph = mean(avg.range_at_65mph), 
+            min.trip_ratio     = min(min.trip_ratio), 
+            max.trip_ratio     = max(max.trip_ratio))
+
+ggplot() + 
+  geom_point(data = all.only, 
+             aes(x = myears, y = avg.trip_ratio))+
+  geom_path(data = all.only, 
+            aes(x  = myears, y = avg.trip_ratio))+
+  geom_path(data = all.only, 
+            aes(x  = myears, y = min.trip_ratio))+
+  geom_path(data = all.only, 
+            aes(x  = myears, y = max.trip_ratio))+
+  geom_path(data = tesla.only, 
+            aes(x  = myears, y = max.trip_ratio, 
+                color = "Tesla"))+
+  scale_y_log10(labels = scales::percent, 
+                breaks = c(seq(0,1, by = 0.1)/10,
+                           seq(0,1, by = 0.1),
+                           seq(0,1, by = 0.1)*10))+
+  scale_x_continuous(breaks = seq(0,3000,by = 1), 
+                     minor_breaks = seq(0,3000,by=1))
+
+
+# max trip time----
+abrp.vc2 %>%
+  .[.$make %in% c("Chevrolet", "Lucid"),]%>%
+  group_by(make, model_family) %>%
+  #ungroup() %>%
+  slice_min(., 
+            order_by = total_trip_time, 
+            n = 1) %>%
+  group_by(make, model_family, model, 
+           range_at_65mph, total_trip_time, 
+           ideal_charge_time, ideal_drive_time, 
+           stops, model_year) %>%
+  summarise() %>%
+  .[order(.$total_trip_time, decreasing = F),
+    c("model", "total_trip_time", "range_at_65mph", "stops")] 
+
+ 
+
+abrp.vc3 %>%
+  group_by(make, model_family) %>%
   summarise(n = n(),
             n_my = n_distinct(model_year), 
             avg.range_at_65 = mean(range_at_65mph), 
             sd.range_at_65  = sd(range_at_65mph), 
-            avg.ideal_chrg_hrs = mean(as.numeric(ideal_charge_time)/60/60), 
-            avg.ideal_drive_hrs = mean(as.numeric(ideal_drive_time)/60/60), 
+            avg.ideal_chrg_hrs = mean(ideal_charge_time), 
+            avg.ideal_drive_hrs = mean(ideal_drive_time), 
             impupted.charge_to_total_hrs = avg.ideal_chrg_hrs / avg.ideal_drive_hrs) %>%
   ungroup() %>%
   slice_min(.,
