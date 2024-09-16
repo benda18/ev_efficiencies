@@ -1734,47 +1734,30 @@ for(i in 1:nrow(abrp.vc2.my)){
 df_cw.out <- df_cw.out %>% as_tibble()
 
 
+# 
+# summarise(group_by(df_cw.out, 
+#                    make, model_family, myears))
 
-summarise(group_by(df_cw.out, 
-                   make, model_family, myears))
+#cw_mfmy <- df_cw.out %>% as_tibble()
+cw_mfmy <- summarise(group_by(df_cw.out, 
+                              make, model_family, myears))
+#rm(df_cw.out)
 
-# df_cw.out <- NULL
-# for(i.make in unique(abrp.vc2.my$make)){
-#   for(i.model in unique(abrp.vc2.my[abrp.vc2.my$make == i.make,]$model_family)){
-#     temp.years <- abrp.vc2.my[abrp.vc2.my$make == i.make & 
-#                                 abrp.vc2.my$model_family == i.model,]$model_year %>%
-#       unique()
-#     
-#     temp.years.list <- strsplit(temp.years, "-")
-#     temp.yrs.out <- NULL
-#     for(i in 1:length(temp.years.list)){
-#      temp.yrs.out <- c(temp.yrs.out, 
-#                        seq(min(as.numeric(temp.years.list[[i]])), 
-#           max(as.numeric(temp.years.list[[i]])), 
-#           by = 1)) %>% 
-#        unique() %>% sort()
-#     }
-#       
-#     df_cw.out <- rbind(df_cw.out, 
-#                        data.frame(make = i.make, 
-#                                   model_family = i.model, 
-#                                   my = temp.yrs.out))
-#   }
-# }
-
-cw_mfmy <- df_cw.out %>% as_tibble()
-rm(df_cw.out)
-
-abrp.vc2.my <- abrp.vc2.my[!is.na(abrp.vc2.my$model_year),] %>% 
-  left_join(., cw_mfmy, 
-            by = c("make", "model_family", "model_year"))
+# abrp.vc2.my <- abrp.vc2.my %>%
+#   #.[!is.na(.$model_year),] %>% 
+#   left_join(., cw_mfmy, 
+#             by = c("make", "model_family"), 
+#             relationship = "many-to-many")
 
 abrp.vc3 <- left_join(abrp.vc2, 
-                      abrp.vc2.my, 
-                      by = c("make", "model_family", "model_year"), 
-                      na_matches = "never") 
+                      cw_mfmy, 
+                      # abrp.vc2.my, 
+                      # by = c("make", "model_family", "model_year"), 
+                      by = c("make", "model_family"), 
+                      na_matches = "never", 
+                      relationship = "many-to-many") 
 
-abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
+#abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
 
 # abrp.vc2 %>% 
 #   left_join(., cw_mfmy, 
@@ -1900,6 +1883,7 @@ abrp.vc2 %>%
            range_at_65mph) %>%
   summarise(n = n())
 
+abrp.vc3
 abrp.vc2 <- abrp.vc2[!is.na(abrp.vc2$total_trip_time),]
 
 mean(abrp.vc2[abrp.vc2$range_at_65mph <= 650| 
@@ -1908,6 +1892,17 @@ sd(abrp.vc2[abrp.vc2$range_at_65mph <= 650|
               abrp.vc2$total_trip_time <= 16,]$range_at_65mph)
 
 hist((abrp.vc2[abrp.vc2$range_at_65mph <= 650,]$range_at_65mph))
+
+abrp.vc2[abrp.vc2$range_at_65mph <= 
+           mean(abrp.vc2$range_at_65mph[grepl(x = abrp.vc2$model, 
+                                         pattern = "Bolt EV")]) & 
+  abrp.vc2$total_trip_time <= 
+    mean(abrp.vc2$range_at_65mph[grepl(x = abrp.vc2$model, 
+                                       pattern = "Bolt EV")])
+    ,] %>%
+  group_by(make) %>%
+  summarise(n_models = n_distinct(model_family))
+
 
 ggplot(data = abrp.vc2[abrp.vc2$range_at_65mph <= 650 & 
                          abrp.vc2$total_trip_time <= 16,], 
