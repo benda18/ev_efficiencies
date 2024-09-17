@@ -1883,46 +1883,46 @@ abrp.vc2 %>%
            range_at_65mph) %>%
   summarise(n = n())
 
-abrp.vc3
-abrp.vc2 <- abrp.vc2[!is.na(abrp.vc2$total_trip_time),]
 
-mean(abrp.vc2[abrp.vc2$range_at_65mph <= 650| 
-                abrp.vc2$total_trip_time <= 16,]$range_at_65mph) + c(-1.5,1.5)*
-sd(abrp.vc2[abrp.vc2$range_at_65mph <= 650| 
-              abrp.vc2$total_trip_time <= 16,]$range_at_65mph)
+abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$total_trip_time),]
 
-hist((abrp.vc2[abrp.vc2$range_at_65mph <= 650,]$range_at_65mph))
+mean(abrp.vc3[abrp.vc3$range_at_65mph <= 650| 
+                abrp.vc3$total_trip_time <= 16,]$range_at_65mph) + c(-1.5,1.5)*
+sd(abrp.vc3[abrp.vc3$range_at_65mph <= 650| 
+              abrp.vc3$total_trip_time <= 16,]$range_at_65mph)
 
-abrp.vc2[abrp.vc2$range_at_65mph <= 
-           mean(abrp.vc2$range_at_65mph[grepl(x = abrp.vc2$model, 
-                                         pattern = "Bolt EV")]) & 
-  abrp.vc2$total_trip_time <= 
-    mean(abrp.vc2$range_at_65mph[grepl(x = abrp.vc2$model, 
-                                       pattern = "Bolt EV")])
-    ,] %>%
-  group_by(make) %>%
-  summarise(n_models = n_distinct(model_family))
+hist((abrp.vc3[abrp.vc3$range_at_65mph <= 650,]$range_at_65mph))
+
+# abrp.vc3[abrp.vc3$range_at_65mph <= 
+#            mean(abrp.vc3$range_at_65mph[grepl(x = abrp.vc3$model, 
+#                                          pattern = "Bolt EV")]) & 
+#            abrp.vc3$total_trip_time <= 
+#     mean(abrp.vc3$range_at_65mph[grepl(x = abrp.vc3$model, 
+#                                        pattern = "Bolt EV")])
+#     ,] %>%
+#   group_by(make) %>%
+#   summarise(n_models = n_distinct(model_family))
 
 
-ggplot(data = abrp.vc2[abrp.vc2$range_at_65mph <= 650 & 
-                         abrp.vc2$total_trip_time <= 16,], 
+ggplot(data = abrp.vc3[abrp.vc3$range_at_65mph <= 650 & 
+                         abrp.vc3$total_trip_time <= 16,], 
        aes(x = range_at_65mph, 
            y = total_trip_time)) + 
   # geom_vline(aes(xintercept = mean(abrp.vc2[abrp.vc2$range_at_65mph <= 650,]$range_at_65mph)))+
   # geom_vline(aes(xintercept = mean(abrp.vc2[abrp.vc2$range_at_65mph <= 650,]$range_at_65mph) - c(1.5)*
   #                  sd(abrp.vc2[abrp.vc2$range_at_65mph <= 650,]$range_at_65mph)))+
-  geom_vline(xintercept = quantile(abrp.vc2[abrp.vc2$range_at_65mph <= 650 & 
-                                          abrp.vc2$total_trip_time <= 16,]$range_at_65mph, 
+  geom_vline(xintercept = quantile(abrp.vc3[abrp.vc3$range_at_65mph <= 650 & 
+                                              abrp.vc3$total_trip_time <= 16,]$range_at_65mph, 
                                    probs = seq(0.25, 0.75, by = 0.5)) + 
                #c(seq(-1.5, 1.5, by = 1.5))*
                    0*
-               sd(abrp.vc2[abrp.vc2$range_at_65mph <= 650 & 
-                                 abrp.vc2$total_trip_time <= 16,]$range_at_65mph))+
-  geom_hline(yintercept = quantile(abrp.vc2[abrp.vc2$range_at_65mph <= 650 & 
-                                          abrp.vc2$total_trip_time <= 16,]$total_trip_time, 
+               sd(abrp.vc3[abrp.vc3$range_at_65mph <= 650 & 
+                             abrp.vc3$total_trip_time <= 16,]$range_at_65mph))+
+  geom_hline(yintercept = quantile(abrp.vc3[abrp.vc3$range_at_65mph <= 650 & 
+                                              abrp.vc3$total_trip_time <= 16,]$total_trip_time, 
                                    probs = seq(0.25,0.75,by=0.5)))+
   geom_point(color = "darkgrey")+
-  geom_jitter(data = abrp.vc2[grepl(x = abrp.vc2$model_family, 
+  geom_jitter(data = abrp.vc3[grepl(x = abrp.vc3$model_family, 
                                    pattern = "Bolt EV"),], 
              aes(color = model_family), 
              size = 3)+
@@ -1934,13 +1934,13 @@ ggplot(data = abrp.vc2[abrp.vc2$range_at_65mph <= 650 &
                      limits = c(NA, NA), 
                      breaks = seq(0,1000, by = 1))+
   theme(legend.position = "bottom", legend.direction = "vertical")+
-  geom_point(data = abrp.vc2[abrp.vc2$total_trip_time <
-                               min(abrp.vc2$total_trip_time[grep("Chevrolet Bolt EV 2019.*Upgrade", 
-                                                                 abrp.vc2$model, 
+  geom_point(data = abrp.vc3[abrp.vc3$total_trip_time <
+                               min(abrp.vc3$total_trip_time[grep("Chevrolet Bolt EV 2019.*Upgrade", 
+                                                                 abrp.vc3$model, 
                                                                  value = F)]) & 
-                               abrp.vc2$range_at_65mph <
-                               min(abrp.vc2$range_at_65mph[grep("Chevrolet Bolt EV 2019.*Upgrade", 
-                                                                abrp.vc2$model, 
+                               abrp.vc3$range_at_65mph <
+                               min(abrp.vc3$range_at_65mph[grep("Chevrolet Bolt EV 2019.*Upgrade", 
+                                                                abrp.vc3$model, 
                                                                 value = F) ]),])
   # scale_y_log10(name = "trip time (hrs)", 
   #                    limits = c(8, NA), 
@@ -1948,14 +1948,15 @@ ggplot(data = abrp.vc2[abrp.vc2$range_at_65mph <= 650 &
   #                          seq(2,10,by=1)*10,
   #                          seq(2,10,by=1)*100))
 
-abrp.vc2[abrp.vc2$total_trip_time <
-           min(abrp.vc2$total_trip_time[grep("Chevrolet Bolt EV 2019.*Upgrade", 
-                                             abrp.vc2$model, 
-                                             value = F)]) & 
-           abrp.vc2$range_at_65mph <
-           min(abrp.vc2$range_at_65mph[grep("Chevrolet Bolt EV 2019.*Upgrade", 
-                                            abrp.vc2$model, 
-                                            value = F) ]),] %>%
+abrp.vc3[abrp.vc3$total_trip_time <=
+           min(abrp.vc3$total_trip_time[grep("Chevrolet Bolt EV 2019.*Upgrade", 
+                                             abrp.vc3$model, 
+                                             value = F)]) #& 
+           # abrp.vc3$range_at_65mph <
+           # min(abrp.vc3$range_at_65mph[grep("Chevrolet Bolt EV 2019.*Upgrade", 
+           #                                  abrp.vc3$model, 
+           #                                  value = F) ])
+         ,] %>%
   group_by(make, model_family) %>%
   slice_min(., order_by = total_trip_time, n = 1) %>%
   # group_by(make, model_family, range_at_65mph, 
@@ -1963,35 +1964,57 @@ abrp.vc2[abrp.vc2$total_trip_time <
   summarise(n = n(), 
             min_triptime = min(total_trip_time), 
             max_range    = max(range_at_65mph)) %>%
-  .[order(.$min_triptime),] 
+  .[order(.$min_triptime),] %>% View()
 
 
-abrp.vc2[abrp.vc2$total_trip_time <=
-           max(abrp.vc2$total_trip_time[grep("Chevrolet Bolt", 
-                                             abrp.vc2$model, 
-                                             value = F)]) & 
-           abrp.vc2$range_at_65mph <=
-           max(abrp.vc2$range_at_65mph[grep("Chevrolet Bolt", 
-                                            abrp.vc2$model, 
-                                            value = F) ]),] %>%
+abrp.vc3[abrp.vc3$total_trip_time <=
+           max(abrp.vc3$total_trip_time[grep("Chevrolet Bolt", 
+                                             abrp.vc3$model, 
+                                             value = F)]) #& 
+           # abrp.vc3$range_at_65mph <=
+           # max(abrp.vc3$range_at_65mph[grep("Chevrolet Bolt", 
+           #                                  abrp.vc3$model, 
+           #                                  value = F) ])
+         ,] %>%
   group_by(make, model_family, total_trip_time,
            model) %>%
   summarise() %>%
   .[order(.$total_trip_time, decreasing = T),] %>%
   as.data.frame() %>%
-  .[! .$make %in% c("Jaguar", "Mercedes-Benz", 
-                    "Jeep", "Lexus", "BMW", "Audi", 
-                    "Rivian", "Porsche", "Volvo", "Polestar", 
+  .[! .$make %in% c("Jaguar",
+                    #"Mercedes-Benz", 
+                    "Lotus", 
+                    #"Lucid", "Rivian", "Cadillac", "GMC",
+                    "Honda",
+                    "Jeep", "Lexus", 
+                    #"BMW", "Audi", 
+                    #"Porsche",
+                    "Volvo",
+                    #"Polestar", 
                     "Fisker", "Genesis", "Vinfast"),] %>%
   #.[.$make %in% c("Nissan", "Chevrolet"),] %>%
   .[order(.$total_trip_time, decreasing = F),] %>%
   as_tibble() %>%
   .[!grepl("europe", .$model, ignore.case = T),] %>%
   group_by(make, 
-           model_family, 
-           total_trip_time) %>% 
-  summarise(n = n()) %>%
-  .[order(.$total_trip_time, decreasing = F),] 
+           model_family) %>% 
+  summarise(min_trip_time = min(total_trip_time), 
+            max_trip_time = max(total_trip_time)) %>%
+  #.[order(.$max_trip_time, decreasing = F),]  %>%
+  as.data.frame(
+
+  ) %>%
+  ggplot(data = .) + 
+  geom_segment(aes(x = min_trip_time, xend = max_trip_time, 
+                   y = model_family, yend = model_family)) +
+  geom_point(aes(x = min_trip_time, 
+                 y = model_family, )) +
+  geom_point(aes(x = max_trip_time, 
+                 y = model_family, )) + 
+  facet_grid(make~., scales = "free_y", 
+             space = "free_y")+
+  theme(strip.text.y = element_text(angle = 0))
+
 
 abrp.vc2[abrp.vc2$range_at_65mph <= 90,] %>%
   group_by(make, model_family) %>%
