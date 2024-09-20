@@ -101,7 +101,7 @@ evtrip(tripmi, refcon, 0.26)  # 13.68
 
 evtrip(tripmi, refcon, 0.17)  # 8.95
 
-gastrip(tripmi, 31, 3.5)  # 22.58
+gastrip(tripmi, 31, 2.99)  # 22.58
 
 
 
@@ -320,3 +320,5 @@ ggplot(data = x,
   geom_point() +
   geom_smooth(method = "auto", 
               se = F) 
+
+
