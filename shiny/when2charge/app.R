@@ -11,9 +11,11 @@ library(shiny)
 library(dplyr)
 library(renv)
 library(scales)
+library(ggplot2)
+library(lubridate)
 
-renv::snapshot()
-renv::status()
+#renv::snapshot()
+#renv::status()
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -90,7 +92,10 @@ server <- function(input, output) {
                 price.per.Kw = price.out))
   }
   # data----
+  
     
+  
+  # server stuff----
   # output$distPlot <- renderPlot({
   #       # generate bins based on input$bins from ui.R
   #       x    <- faithful[, 2]
