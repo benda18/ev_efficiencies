@@ -1774,6 +1774,53 @@ abrp.vc3 <- abrp.vc3[!abrp.vc3$model_family == "Roadster",]
 
 # explore----
 
+plot.boxplot <- abrp.vc2 %>%
+  .[!.$make %in% c("Lotus", 
+                   #"Mercedes-Benz", "BMW", 
+                   #"Jeep", 
+                   "Honda", 
+                   #"Jaguar", "GMC", 
+                   #"Genesis", 
+                   #"Mini", "Fiat", 
+                   #"BYD", "Fisker", 
+                   #"Cadillac", "Rivian", 
+                   "Lexus"),] %>%
+  .[.$total_trip_time <= 13,] %>% 
+  .[!is.na(.$make),] %>%
+  ungroup() %>%
+  group_by(make, model_family) %>%
+  slice_min(order_by = total_trip_time, 
+            n = 1) 
+
+plot.boxplot$make_f <- factor(plot.boxplot$make, 
+                              levels = unique(plot.boxplot$make[order(plot.boxplot$total_trip_time, 
+                                                                      decreasing = F)]))
+
+ggplot(data = plot.boxplot, 
+         aes(x = total_trip_time, y = make_f)) + 
+  geom_boxplot()
+
+abrp.vc2 %>%
+  .[!.$make %in% c("Lotus", "Mercedes-Benz", "BMW", "Jeep", 
+                   "Honda", "Jaguar", "GMC", 
+                   "Genesis", "Mini", "Fiat", 
+                   "BYD", "Fisker", "Cadillac", 
+                   "Rivian", "Lexus"),] %>%
+  .[.$total_trip_time <= 13,] %>% 
+  .[!is.na(.$make),] %>%
+  ungroup() %>%
+  group_by(make, model_family) %>%
+  slice_min(order_by = total_trip_time, 
+            n = 1) %>%
+  ggplot(data = ., 
+         aes(x = total_trip_time, y = make, 
+             color = factor(stops))) + 
+  geom_point()+
+  scale_color_viridis_d(option = "B")+
+  geom_vline(aes(xintercept = abrp.vc2[abrp.vc2$make == "Chevrolet" & 
+                                         abrp.vc2$model_family == "Bolt EV",][1,]$total_trip_time))+
+  facet_grid(factor(floor(total_trip_time))~., scales = "free", space = "free")
+
 some.makes <- c("Ford", "Chevrolet", "Hyundai")
 
 abrp.vc3 %>%

@@ -48,13 +48,14 @@ t_monthly_cost <- function(per.month.sub = 12.99,
   return(out)
 }
 
+args(t_monthly_cost)
 t_monthly_cost()
 
 # Analysis----
 
-car_range     <- 248
-car_battkwh   <- 63.8
-miles_per_day <- seq(0,160,by = 5)#144
+car_range     <- 241 #264 #248
+car_battkwh   <- 61.4 #63.8
+miles_per_day <- 144 #seq(0,160,by = 5)#144
 
 mpd <- miles_per_day
 

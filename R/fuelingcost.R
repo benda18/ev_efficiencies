@@ -2,7 +2,7 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 library(renv)
-
+library(shiny)
 renv::status()
 renv::snapshot()
 
