@@ -1387,12 +1387,12 @@ Citroen ami 45 (alpha)	17	02:29	00:10	52	139:30
   
 }
 
-# data cleanup----
-abrp.vc2$trip_ratio %>% fivenum()
-abrp.vc2$avg_trip_mph %>% fivenum()
-
-hist(abrp.vc2$avg_trip_mph)
-hist(abrp.vc2$pct_of_70mph)
+# # data cleanup----
+# abrp.vc2$trip_ratio %>% fivenum()
+# abrp.vc2$avg_trip_mph %>% fivenum()
+# 
+# hist(abrp.vc2$avg_trip_mph)
+# hist(abrp.vc2$pct_of_70mph)
 
 
 # make
@@ -1419,53 +1419,53 @@ abrp.vc2 <- abrp.vc2[!grepl("Volkswagen e-Caddy|Volkswagen e-Crafter|Volkswagen 
 
 abrp.vc2 <- abrp.vc2[grepl(pattern = na.makes, x = abrp.vc2$model),]
 
-# model-year----
-abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = abrp.vc2$model)
-abrp.vc2$model <- gsub(pattern = " 2020-21 ", replacement = " 2020-2021 ", x = abrp.vc2$model)
-abrp.vc2$model <- gsub(pattern = " 2018-19 ", replacement = " 2018-2019 ", x = abrp.vc2$model)
-abrp.vc2$model <- gsub(pattern = " 2015-19 ", replacement = " 2015-2019 ", x = abrp.vc2$model)
-abrp.vc2$model <- gsub(pattern = "\\(2021-\\)", replacement = "2021+ ", x = abrp.vc2$model)
-abrp.vc2$model <- gsub(pattern = " 2020- ",   replacement = " 2020+ ", x = abrp.vc2$model)
-
-temp <- abrp.vc2$model  %>%
-  lapply(., gsub, pattern = "2012\\+\\(14.5", 
-         replacement = "2012+ (14.5")  %>%
-  unlist() %>%
-  strsplit(., " ") %>%
-  lapply(., grep, 
-         #pattern = "^20\\d{2,2}.*{0,5}|^\\(2021-\\)$", value = T) %>%
-         pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
-         value = T) 
-
-temp2 <- list()
-for(i in 1:length(temp)){
-  temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, 
-                                            abort = function() {})))
-}
-
-unlist(temp) %>% 
-  unique() %>%
-  sort() %>%
-  strsplit(., "-") %>%
-  unlist() %>% unique() %>% gsub("\\+", "", .) %>%
-  as.numeric() %>% range
-
-abrp.vc2$with_model.year <- unlist(temp2)
-abrp.vc2$model_year      <- NA
-
-for(i in 1:length(temp2)){
-  if(temp2[[i]] == T){
-    #print(temp[[i]])
-    abrp.vc2$model_year[i] <- temp[[i]]
-  }
-}
-
-abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)] <- paste(abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)], 
-      "2025", sep = "") %>%
-  gsub("\\+", "-", .)
-
-abrp.vc2[!is.na(abrp.vc2$model_year),"model_year"]$model_year %>%
-  table()
+# # model-year----
+# abrp.vc2$model <- gsub(pattern = " 2016-17 ", replacement = " 2016-2017 ", x = abrp.vc2$model)
+# abrp.vc2$model <- gsub(pattern = " 2020-21 ", replacement = " 2020-2021 ", x = abrp.vc2$model)
+# abrp.vc2$model <- gsub(pattern = " 2018-19 ", replacement = " 2018-2019 ", x = abrp.vc2$model)
+# abrp.vc2$model <- gsub(pattern = " 2015-19 ", replacement = " 2015-2019 ", x = abrp.vc2$model)
+# abrp.vc2$model <- gsub(pattern = "\\(2021-\\)", replacement = "2021+ ", x = abrp.vc2$model)
+# abrp.vc2$model <- gsub(pattern = " 2020- ",   replacement = " 2020+ ", x = abrp.vc2$model)
+# 
+# temp <- abrp.vc2$model  %>%
+#   lapply(., gsub, pattern = "2012\\+\\(14.5", 
+#          replacement = "2012+ (14.5")  %>%
+#   unlist() %>%
+#   strsplit(., " ") %>%
+#   lapply(., grep, 
+#          #pattern = "^20\\d{2,2}.*{0,5}|^\\(2021-\\)$", value = T) %>%
+#          pattern = "^20\\d{2}$|^20.{2}-20\\d{2}$|^\\(2021-\\)$|\\d{4,4}\\+$|\\d{4,4}-$|20\\d{2,2}-19|20\\d{2,2}-21|20\\d{2,2}-17", 
+#          value = T) 
+# 
+# temp2 <- list()
+# for(i in 1:length(temp)){
+#   temp2[[i]] <- as.logical(sum(withRestarts(nchar(temp[i][[1]]) >= 0, 
+#                                             abort = function() {})))
+# }
+# 
+# # unlist(temp) %>% 
+# #   unique() %>%
+# #   sort() %>%
+# #   strsplit(., "-") %>%
+# #   unlist() %>% unique() %>% gsub("\\+", "", .) %>%
+# #   as.numeric() %>% range
+# 
+# abrp.vc2$with_model.year <- unlist(temp2)
+# abrp.vc2$model_year      <- NA
+# 
+# for(i in 1:length(temp2)){
+#   if(temp2[[i]] == T){
+#     #print(temp[[i]])
+#     abrp.vc2$model_year[i] <- temp[[i]]
+#   }
+# }
+# 
+# abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)] <- paste(abrp.vc2$model_year[grepl("\\+$", abrp.vc2$model_year)], 
+#                                                                  "2025", sep = "") %>%
+#   gsub("\\+", "-", .)
+# 
+# # abrp.vc2[!is.na(abrp.vc2$model_year),"model_year"]$model_year %>%
+# #   table()
 
 
 # model family----
