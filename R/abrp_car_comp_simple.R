@@ -1720,3 +1720,5 @@ abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dua
 # # Ideal Charge Time is the time spent charging on each leg of the trip. Ideal
 # # Drive Time is the time spent driving on each leg of the trip. Trip Ratio shows
 # # the split between these two visually.
+
+
