@@ -1707,70 +1707,70 @@ abrp.vc2$model_family[abrp.vc2$make == "Cadillac"] <- gsub(pattern = " {0,}Lyriq
 #   gsub("Bolt EV", "Bolt", .) %>%
 #   gsub(" {1,100}", " ", .) %>% trimws() 
 
-# years----
-
-abrp.vc2.my <- abrp.vc2[,c("make", "model_family", "model_year")] %>%
-  group_by(make, model_family, model_year) %>%
-  summarise() %>%
-  .[!is.na(.$model_year),]
-
-df_cw.out <- NULL
-for(i in 1:nrow(abrp.vc2.my)){
-  temp.yr.range <- # "2018-2021" %>%
-    abrp.vc2.my$model_year[i] %>%
-   strsplit(x = ., 
-            split = "-|\\+") %>%
-    unlist() %>%
-    as.numeric()
-  
-  
-  
-  df_cw.out <- rbind(df_cw.out, 
-                     data.frame(make         = abrp.vc2.my$make[i], 
-                                model_family = abrp.vc2.my$model_family[i], 
-                                model_year   = abrp.vc2.my$model_year[i],
-                                myears   = seq(min(temp.yr.range),max(temp.yr.range), by = 1)))
-}
-df_cw.out <- df_cw.out %>% as_tibble()
-
-
+# # years----
 # 
-# summarise(group_by(df_cw.out, 
-#                    make, model_family, myears))
-
-#cw_mfmy <- df_cw.out %>% as_tibble()
-cw_mfmy <- summarise(group_by(df_cw.out, 
-                              make, model_family, myears))
-#rm(df_cw.out)
-
-# abrp.vc2.my <- abrp.vc2.my %>%
-#   #.[!is.na(.$model_year),] %>% 
-#   left_join(., cw_mfmy, 
-#             by = c("make", "model_family"), 
-#             relationship = "many-to-many")
-
-abrp.vc3 <- left_join(abrp.vc2, 
-                      cw_mfmy, 
-                      # abrp.vc2.my, 
-                      # by = c("make", "model_family", "model_year"), 
-                      by = c("make", "model_family"), 
-                      na_matches = "never", 
-                      relationship = "many-to-many") 
-
-#abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
-
-# abrp.vc2 %>% 
-#   left_join(., cw_mfmy, 
-#             by = c("make", "model_family"))
-#   .[.$make %in% "Chevrolet"  ,] %>%
-#   group_by(make, model_family, model_year, model) %>%
-#   summarise(n = n())
-
-# remove tesla roadster
-abrp.vc3 <- abrp.vc3[!abrp.vc3$model_family == "Roadster",]
-
-#abrp.vc3 <- abrp.vc3[!abrp.vc3$myears >= 2023,]
-
+# abrp.vc2.my <- abrp.vc2[,c("make", "model_family", "model_year")] %>%
+#   group_by(make, model_family, model_year) %>%
+#   summarise() %>%
+#   .[!is.na(.$model_year),]
+# 
+# df_cw.out <- NULL
+# for(i in 1:nrow(abrp.vc2.my)){
+#   temp.yr.range <- # "2018-2021" %>%
+#     abrp.vc2.my$model_year[i] %>%
+#    strsplit(x = ., 
+#             split = "-|\\+") %>%
+#     unlist() %>%
+#     as.numeric()
+#   
+#   
+#   
+#   df_cw.out <- rbind(df_cw.out, 
+#                      data.frame(make         = abrp.vc2.my$make[i], 
+#                                 model_family = abrp.vc2.my$model_family[i], 
+#                                 model_year   = abrp.vc2.my$model_year[i],
+#                                 myears   = seq(min(temp.yr.range),max(temp.yr.range), by = 1)))
+# }
+# df_cw.out <- df_cw.out %>% as_tibble()
+# 
+# 
+# # 
+# # summarise(group_by(df_cw.out, 
+# #                    make, model_family, myears))
+# 
+# #cw_mfmy <- df_cw.out %>% as_tibble()
+# cw_mfmy <- summarise(group_by(df_cw.out, 
+#                               make, model_family, myears))
+# #rm(df_cw.out)
+# 
+# # abrp.vc2.my <- abrp.vc2.my %>%
+# #   #.[!is.na(.$model_year),] %>% 
+# #   left_join(., cw_mfmy, 
+# #             by = c("make", "model_family"), 
+# #             relationship = "many-to-many")
+# 
+# abrp.vc3 <- left_join(abrp.vc2, 
+#                       cw_mfmy, 
+#                       # abrp.vc2.my, 
+#                       # by = c("make", "model_family", "model_year"), 
+#                       by = c("make", "model_family"), 
+#                       na_matches = "never", 
+#                       relationship = "many-to-many") 
+# 
+# #abrp.vc3 <- abrp.vc3[!is.na(abrp.vc3$model_year),]
+# 
+# # abrp.vc2 %>% 
+# #   left_join(., cw_mfmy, 
+# #             by = c("make", "model_family"))
+# #   .[.$make %in% "Chevrolet"  ,] %>%
+# #   group_by(make, model_family, model_year, model) %>%
+# #   summarise(n = n())
+# 
+# # remove tesla roadster
+# abrp.vc3 <- abrp.vc3[!abrp.vc3$model_family == "Roadster",]
+# 
+# #abrp.vc3 <- abrp.vc3[!abrp.vc3$myears >= 2023,]
+# 
 
 # explore----
 
