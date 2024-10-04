@@ -4,6 +4,7 @@ library(renv)
 library(readr)
 library(janitor)
 library(data.table)
+library(glue)
 
 renv::status()
 renv::snapshot()
@@ -1722,3 +1723,128 @@ abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dua
 # # the split between these two visually.
 
 
+abrp.vc2
+abrp.vc2$make
+abrp.vc2$model_family
+
+abrp.vc2 %>%
+  group_by(make) %>%
+  slice_max(., 
+            order_by = trip_ratio, 
+            n = 1)
+
+lm(ideal_drive_time + ideal_charge_time ~total_trip_time, 
+   abrp.vc2) %>% summary
+
+ggplot(data = abrp.vc2, 
+       aes(y = ideal_charge_time, 
+           x = ideal_drive_time)) + 
+  geom_point(aes(color = trip_ratio)) +
+  geom_smooth()+
+  scale_y_log10()+
+  scale_color_viridis_c(option = "C", trans = "log10", labels = scales::comma)
+
+# abrp.vc2$temp <-  abrp.vc2$ideal_charge_time / abrp.vc2$ideal_drive_time 
+# 
+# abrp.vc2$temp == abrp.vc2$trip_ratio
+
+slice_min(abrp.vc2, 
+          order_by = trip_ratio, 
+        prop = 0.05) %>%
+  group_by(make, model_family) %>%
+  summarise(n = n())
+
+names(abrp.vc2)
+
+ggplot(data = abrp.vc2,#[abrp.vc2$model_family == "Bolt",], 
+       aes(x = stops, 
+           y = trip_ratio)) + 
+  geom_point(aes(color = trip_ratio)) +
+  geom_smooth(se = F, method = "lm")+
+  scale_y_log10()+
+  scale_color_viridis_c(option = "C", trans = "log10", labels = scales::comma)+
+  theme_dark()
+
+abrp.vc2[abrp.vc2$model_family %in% 
+           c("Bolt", "Bolt EUV"),] %>%
+  group_by(make, model_family, model, ideal_charge_time, 
+           ideal_drive_time) %>%
+  summarise(n = n())
+
+
+
+list.yr.which <- list()
+
+for(i in 2001:2025){
+  list.yr.which[[as.character(i)]] <- which(grepl(pattern = paste(" {1,}", i, "-{1,}", 
+                                                                  sep = "", collapse = ""), 
+                                                  x = abrp.vc2$model) |
+                                              
+                                              grepl(pattern = paste("-{1,}", i, " {1,}", 
+                                                                    sep = "", collapse = ""), 
+                                                    x = abrp.vc2$model) |
+                                              
+                                              grepl(pattern = paste(" {1,}", i, "\\+{1,}", 
+                                                                    sep = "", collapse = ""), 
+                                                    x = abrp.vc2$model) |
+                                              
+                                              grepl(pattern = paste(" {1,}", i, " {1,1}", 
+                                                                    sep = "", collapse = ""), 
+                                                    x = abrp.vc2$model))
+}
+
+
+abrp.vc2$yr_min <- NA
+abrp.vc2$yr_max <- NA
+
+for(i2 in sort(unique(unlist(list.yr.which)))){
+  #print(i2)
+  
+  temp.hold.years <- NULL
+  for(i in names(list.yr.which)){
+    if(i2 %in% list.yr.which[[i]]) {
+      #print("foo")
+      temp.hold.years <- c(temp.hold.years, as.numeric(i))
+    }else{
+       #print("")
+      }
+  }
+  
+  
+  abrp.vc2[i2,]$yr_min <- min(temp.hold.years)
+  abrp.vc2[i2,]$yr_max <- max(temp.hold.years)
+  
+}
+
+ggplot() + 
+  geom_segment(data = abrp.vc2, 
+               aes(x    = yr_min, 
+                   xend = yr_max, 
+                   y = 1:nrow(abrp.vc2), 
+                   yend = 1:nrow(abrp.vc2)))
+
+
+
+# 
+# abrp.vc2$model %>%
+#   gsub("^.* 20", "__20", x = .) %>%
+#   gsub("^.*__", "__", .) %>%
+#   gsub(" \\d{2,2}", "", .) %>%
+#   gsub(" kWh", "", .) %>%
+#   gsub("\\(.*\\)", "", .) %>%
+#   gsub(" \\D*", "", .) %>%
+#   gsub("[[:alpha:]]*", "", .) %>%
+#   gsub("\\+.*$", "+", .) %>%
+#   gsub("__", "", .) %>%
+#   gsub("\\+", "-2025", .) %>%
+#   strsplit(., "-") %>%
+#   #.[nchar(.) %in% c(4,5,9)] %>%
+#     lapply(., last)
+# 
+# # "Ford 2025-2029 transit 13" %>%
+# #   gsub("-", "$", .) %>%
+# #   gsub("\\D*", "", .)
+# # 
+# # gsub(" \\D*", 
+# #      "", 
+# #      x="Ford 2025-2029 transit 13")
