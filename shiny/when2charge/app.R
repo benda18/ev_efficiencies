@@ -16,7 +16,6 @@ library(lubridate)
 
 #renv::snapshot()
 #renv::status()
-
 # Define UI for application that draws a histogram
 ui <- fluidPage(
 

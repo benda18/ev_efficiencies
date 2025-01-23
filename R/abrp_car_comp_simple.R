@@ -1413,6 +1413,7 @@ na.makes <- c("Cadillac", "Chevrolet", "BMW", "Audi",
               "Volkswagen", "Volvo") %>%
   paste(., sep = "|", collapse = "|")
 
+
 # remove na.models specifically
 abrp.vc2 <- abrp.vc2[!grepl("Toyota Proace", abrp.vc2$model),]
 abrp.vc2 <- abrp.vc2[!grepl("Volkswagen e-Caddy|Volkswagen e-Crafter|Volkswagen e-Up|Volkswagen e-Transporter", 
@@ -1709,7 +1710,20 @@ abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dua
   gsub(" {1,100}", " ", .) %>% trimws()
 
 
+# find that one good nissan leaf
+abrp.vc2[abrp.vc2$make %in% c(#"Nissan", 
+                              "Chevrolet"),] %>%
+  .[.$model_family %in% c("Leaf", "Bolt", "Bolt EUV"),] %>%
+  group_by(model_family) %>%
+  slice_min(., 
+            order_by = total_trip_time, 
+            n = 1) %>%
+  .[complete.cases(.),]  %>%
+  .[,"model"]
 
+
+abrp.vc2[abrp.vc2$total_trip_time >= 11.2 & abrp.vc2$total_trip_time <= 11.4 &  
+           !is.na(abrp.vc2$total_trip_time),]$model
 # New Analysis----
 # # The road trip values shown are computed on a hypothetical road trip of 600mi
 # # at an average speed of 70mph and a minimum leg length of 90mi (to model
@@ -1722,6 +1736,10 @@ abrp.vc2$model_family <- gsub("AWD|RWD|FWD|quattro|4MATIC|4MOTION|Twin motor|Dua
 # # Drive Time is the time spent driving on each leg of the trip. Trip Ratio shows
 # # the split between these two visually.
 
+
+abrp.vc2$model_family[abrp.vc2$make == "Chevrolet" & 
+                        grepl("Blazer", 
+                              abrp.vc2$model)] <- "Blazer"
 
 abrp.vc2
 abrp.vc2$make
@@ -1780,7 +1798,7 @@ for(i in 2001:2025){
                                                                   sep = "", collapse = ""), 
                                                   x = abrp.vc2$model) |
                                               
-                                              grepl(pattern = paste("-{1,}", i, " {1,}", 
+                                              grepl(pattern = paste("-{1,}", i, " {0,}", 
                                                                     sep = "", collapse = ""), 
                                                     x = abrp.vc2$model) |
                                               
@@ -1788,7 +1806,7 @@ for(i in 2001:2025){
                                                                     sep = "", collapse = ""), 
                                                     x = abrp.vc2$model) |
                                               
-                                              grepl(pattern = paste(" {1,}", i, " {1,1}", 
+                                              grepl(pattern = paste(" {1,}", i, " {0,1}", 
                                                                     sep = "", collapse = ""), 
                                                     x = abrp.vc2$model))
 }
@@ -1824,27 +1842,11 @@ ggplot() +
                    yend = 1:nrow(abrp.vc2)))
 
 
+abrp.vc2 %>%
+  #.[.$make %in% c("Ford"),] %>%
+  .[grepl(pattern = "Chevrolet Bolt", abrp.vc2$model),] %>%
+  group_by(make, model_family, 
+           model, yr_min, yr_max) %>%
+  summarise(n = n())
 
-# 
-# abrp.vc2$model %>%
-#   gsub("^.* 20", "__20", x = .) %>%
-#   gsub("^.*__", "__", .) %>%
-#   gsub(" \\d{2,2}", "", .) %>%
-#   gsub(" kWh", "", .) %>%
-#   gsub("\\(.*\\)", "", .) %>%
-#   gsub(" \\D*", "", .) %>%
-#   gsub("[[:alpha:]]*", "", .) %>%
-#   gsub("\\+.*$", "+", .) %>%
-#   gsub("__", "", .) %>%
-#   gsub("\\+", "-2025", .) %>%
-#   strsplit(., "-") %>%
-#   #.[nchar(.) %in% c(4,5,9)] %>%
-#     lapply(., last)
-# 
-# # "Ford 2025-2029 transit 13" %>%
-# #   gsub("-", "$", .) %>%
-# #   gsub("\\D*", "", .)
-# # 
-# # gsub(" \\D*", 
-# #      "", 
-# #      x="Ford 2025-2029 transit 13")
+
