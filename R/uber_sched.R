@@ -1,6 +1,9 @@
+
+
+
+library(renv)
 library(ggplot2)
 library(lubridate)
-library(renv)
 library(dplyr)
 
 status()
@@ -91,7 +94,7 @@ lyft.incent <- data.frame(type = "busy_hours",
                           end_minute = c(0,0,0,0,30,59,30,59)) %>% as_tibble()
 
 lyft.incent$dow_f <- factor(lyft.incent$dow_f, 
-                            levels = unlist(strsplit("Monday Tuesday Wednesday Thursday Friday Saturday Sunday", " ")))
+                            levels = rev(unlist(strsplit("Monday Tuesday Wednesday Thursday Friday Saturday Sunday", " "))))
 
 
 
@@ -102,7 +105,7 @@ head(full.full)
 # ggplot() + 
 #   geom_segment(data = full.full)
 
-lyft.incent_j <- left_join(lyft.incent, 
+lyft.incent_j <- full_join(lyft.incent, 
                            cw_dow, by = "dow_f") %>%
   mutate(.,
          start_dt = as_datetime(date) %m+% 
@@ -135,3 +138,27 @@ ggplot() +
   scale_x_datetime(date_breaks = "1 day", 
                    date_minor_breaks = "1 day") 
 
+
+# time of day
+
+lyft.incent_j <- lyft.incent_j %>%
+  mutate(., 
+         start_tod = hour(start_dt)+
+           minute(start_dt)/60 + 
+           second(start_dt)/60/60, 
+         end_tod = hour(end_dt)+
+           minute(end_dt)/60 + 
+           second(end_dt)/60/60)
+
+ggplot() + 
+  geom_segment(data = lyft.incent_j, 
+               aes(x = start_tod, xend = end_tod, 
+                   y = dow_f, yend = dow_f), 
+               linewidth = 4)+
+  # geom_vline(aes(xintercept = Sys.time(), 
+  #                color = "Now"), 
+  #            linetype = 2232)+
+  theme(legend.position = "bottom", 
+        legend.direction = "vertical", 
+        axis.text.x = element_text(angle = 45, hjust = 1, vjust = 1))+
+  labs(title = "lyft incentive schedule")
